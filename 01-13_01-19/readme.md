@@ -8,12 +8,7 @@
 - **Node.js** with **Express.js** to handle routing and API endpoints.  
 
 ### Database  
-- **MySQL** for structured data storage and query management.  
-
-## 📂 Repository Structure  
-- `frontend/` - Contains the HTML, CSS, and JavaScript files.  
-- `backend/` - Contains the Node.js and Express.js server code.  
-- `database/` - SQL scripts and schema definitions for the MySQL database.  
+- **Postgres SQL** for structured data storage and query management.  
 
 ## 🎯 Goals  
 Our aim is to create a web app that allows users to:  
