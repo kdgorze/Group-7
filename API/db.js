@@ -1,16 +1,17 @@
-const mysql = require("mysql2");
+const { Pool } = require("pg"); // Import pg module
 
-// Create MySQL connection pool
-const pool = mysql.createPool({
-  host: "localhost", // Replace with your host
-  user: "root", // Replace with your username
-  password: "", // Replace with your password
-  database: "picklers", // Replace with your database name
+// Set up connection pool for Supabase PostgreSQL
+const pool = new Pool({
+  user: "postgres.akdlmvaxtbcbzunlxirr", 
+  password: "diXuPkZgNMoe6Ruq", 
+  host: "aws-0-us-east-1.pooler.supabase.com", 
+  database: "postgres", 
+  port: 6543, 
+  ssl: {
+    rejectUnauthorized: false, 
+  },
 });
 
-// Export the connection pool
-module.exports = pool.promise();
+module.exports = pool;
 
 
-
-// probably a good idea to add a .env file to store the database credentials
