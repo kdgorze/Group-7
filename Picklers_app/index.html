@@ -1,156 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Picklers App</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <!-- This is again a very rough draft of what we're going for -->
-<!-- Navbar -->
-<nav class="navbar is-primary">
-    <div class="navbar-brand">
+    <!-- Navbar -->
+    <nav class="navbar is-primary">
+      <div class="navbar-brand">
         <a class="navbar-item" href="index.html">
-            <!-- <img src="assets/logo.png" alt="Picklers Logo" class="image is-32x32"> -->
-            <span class="ml-2 is-size-4">Picklers</span>
+          <!-- <img src="assets/logo.png" alt="Picklers Logo" class="image is-32x32"> -->
+          <span class="ml-2 is-size-4">Picklers</span>
         </a>
         <div class="navbar-burger burger" data-target="navbarMenu">
-            <span></span>
-            <span></span>
-            <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-    </div>
+      </div>
 
-    <div id="navbarMenu" class="navbar-menu">
+      <div id="navbarMenu" class="navbar-menu">
         <div class="navbar-start">
-            <a class="navbar-item" href="#home">Home</a>
-            <a class="navbar-item" href="#tournaments">Tournaments</a>
-            <a class="navbar-item" href="#pickler-pointer">Pickler Pointer</a>
-            <a class="navbar-item" href="#profile">Profile</a>
+          <a class="navbar-item" href="#home">Home</a>
+          <a class="navbar-item" href="#tournaments">Tournaments</a>
+          <a class="navbar-item" href="#pickler-pointer">Pickler Pointer</a>
+          <a class="navbar-item" href="#profile">Profile</a>
         </div>
-    </div>
-</nav>
+      </div>
+    </nav>
 
-<!-- Main Hero Section -->
-<section class="hero is-primary is-bold">
-    <div class="hero-body">
+    <!-- Main Hero Section -->
+    <section class="hero is-primary is-bold">
+      <div class="hero-body">
         <div class="container has-text-centered">
-            <h1 class="title">
-                Welcome to Picklers! 🥒
-            </h1>
-            <h2 class="subtitle">
-                Your go-to app for Pickleball tournaments, rankings, and social fun!
-            </h2>
-            <a href="#tournaments" class="button is-info is-large">Get Started</a>
+          <h1 class="title">Welcome to Picklers! 🥒</h1>
+           <button id="fetchData" class="button is-primary">Get API Data</button>
+          <p id="apiResponse" class="mt-4"></p>
+          <h2 class="subtitle">
+            Your go-to app for Pickleball tournaments, rankings, and social fun!
+          </h2>
+          <a href="#tournaments" class="button is-info is-large">Get Started</a>
         </div>
-    </div>
-</section>
+      </div>
+    </section>
 
-<!-- Home Section -->
-<section id="home" class="section">
-    <div class="container">
+    <!-- Home Section -->
+    <section id="home" class="section">
+      <div class="container">
         <h2 class="title is-3">What is Picklers?</h2>
         <p>
-            Picklers is the ultimate app for Pickleball players! Join tournaments, track your rankings, and socialize with fellow players.
+          Picklers is the ultimate app for Pickleball players! Join tournaments,
+          track your rankings, and socialize with fellow players.
         </p>
-    </div>
-</section>
+      </div>
+    </section>
 
-<!-- Tournaments Section -->
-<section id="tournaments" class="section has-background-light">
-    <div class="container">
+    <!-- Tournaments Section -->
+    <section id="tournaments" class="section has-background-light">
+      <div class="container">
         <h2 class="title is-3">Upcoming Tournaments</h2>
         <p>
-            Check out our latest tournaments and register to compete against the best!
+          Check out our latest tournaments and register to compete against the
+          best!
         </p>
         <div class="columns is-multiline">
-            <div class="column is-one-third">
-                <div class="card">
-                    <div class="card-content">
-                        <p class="title">Spring Tournament</p>
-                        <p class="subtitle">March 2025</p>
-                        <p>Compete in our annual spring event!</p>
-                    </div>
-                    <footer class="card-footer">
-                        <a href="#" class="card-footer-item">Learn More</a>
-                        <a href="#" class="card-footer-item">Register</a>
-                    </footer>
-                </div>
+          <div class="column is-one-third">
+            <div class="card">
+              <div class="card-content">
+                <p class="title">Spring Tournament</p>
+                <p class="subtitle">March 2025</p>
+                <p>Compete in our annual spring event!</p>
+              </div>
+              <footer class="card-footer">
+                <a href="#" class="card-footer-item">Learn More</a>
+                <a href="#" class="card-footer-item">Register</a>
+              </footer>
             </div>
-            <div class="column is-one-third">
-                <div class="card">
-                    <div class="card-content">
-                        <p class="title">Summer Showdown</p>
-                        <p class="subtitle">June 2025</p>
-                        <p>Get ready for a hot summer tournament!</p>
-                    </div>
-                    <footer class="card-footer">
-                        <a href="#" class="card-footer-item">Learn More</a>
-                        <a href="#" class="card-footer-item">Register</a>
-                    </footer>
-                </div>
+          </div>
+          <div class="column is-one-third">
+            <div class="card">
+              <div class="card-content">
+                <p class="title">Summer Showdown</p>
+                <p class="subtitle">June 2025</p>
+                <p>Get ready for a hot summer tournament!</p>
+              </div>
+              <footer class="card-footer">
+                <a href="#" class="card-footer-item">Learn More</a>
+                <a href="#" class="card-footer-item">Register</a>
+              </footer>
             </div>
-            <div class="column is-one-third">
-                <div class="card">
-                    <div class="card-content">
-                        <p class="title">Fall Championships</p>
-                        <p class="subtitle">October 2025</p>
-                        <p>Our grand finale tournament of the year!</p>
-                    </div>
-                    <footer class="card-footer">
-                        <a href="#" class="card-footer-item">Learn More</a>
-                        <a href="#" class="card-footer-item">Register</a>
-                    </footer>
-                </div>
+          </div>
+          <div class="column is-one-third">
+            <div class="card">
+              <div class="card-content">
+                <p class="title">Fall Championships</p>
+                <p class="subtitle">October 2025</p>
+                <p>Our grand finale tournament of the year!</p>
+              </div>
+              <footer class="card-footer">
+                <a href="#" class="card-footer-item">Learn More</a>
+                <a href="#" class="card-footer-item">Register</a>
+              </footer>
             </div>
+          </div>
         </div>
-    </div>
-</section>
+      </div>
+    </section>
 
-<!-- Pickler Pointer Section -->
-<section id="pickler-pointer" class="section">
-    <div class="container">
+    <!-- Pickler Pointer Section -->
+    <section id="pickler-pointer" class="section">
+      <div class="container">
         <h2 class="title is-3">Pickler Pointer</h2>
         <p>
-            Find the best courts and partners near you! Explore locations and connect with fellow pickleball enthusiasts.
+          Find the best courts and partners near you! Explore locations and
+          connect with fellow pickleball enthusiasts.
         </p>
         <a href="#" class="button is-link">Explore Pickler Pointer</a>
-    </div>
-</section>
+      </div>
+    </section>
 
-<!-- Profile Section -->
-<section id="profile" class="section has-background-light">
-    <div class="container">
+    <!-- Profile Section -->
+    <section id="profile" class="section has-background-light">
+      <div class="container">
         <h2 class="title is-3">Your Profile</h2>
         <p>
-            Manage your profile, track your progress, and view your past tournaments and rankings.
+          Manage your profile, track your progress, and view your past
+          tournaments and rankings.
         </p>
         <a href="#" class="button is-warning">Go to Profile</a>
-    </div>
-</section>
+      </div>
+    </section>
 
-<!-- Footer -->
-<footer class="footer has-background-primary has-text-white">
-    <div class="content has-text-centered">
+    <!-- Footer -->
+    <footer class="footer has-background-primary has-text-white">
+      <div class="content has-text-centered">
         <p>&copy; 2025 Picklers App | Built with ❤️ from group-7</p>
-    </div>
-</footer>
+      </div>
+    </footer>
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
         // Navbar burger toggle for mobile view
-        const burger = document.querySelector('.navbar-burger');
-        const menu = document.querySelector('#navbarMenu');
-        
-        burger.addEventListener('click', () => {
-            burger.classList.toggle('is-active');
-            menu.classList.toggle('is-active');
-        });
-    });
-</script>
+        const burger = document.querySelector(".navbar-burger");
+        const menu = document.querySelector("#navbarMenu");
 
-</body>
+        burger.addEventListener("click", () => {
+          burger.classList.toggle("is-active");
+          menu.classList.toggle("is-active");
+        });
+      });
+        document.getElementById("fetchData").addEventListener("click", async function() {
+        try {
+          const response = await fetch("http://localhost:3000/api/players");
+          const players = await response.json();
+          let output = "<h3>Players:</h3><ul>";
+          players.forEach(player => {
+            output += `<li>${player.name} - Rank: ${player.rank}</li>`;
+          });
+          output += "</ul>";
+          document.getElementById("apiResponse").innerHTML = output;
+        } catch (error) {
+          document.getElementById("apiResponse").innerHTML =
+            "Error fetching data.";
+        }
+      });
+    </script>
+  </body>
 </html>
