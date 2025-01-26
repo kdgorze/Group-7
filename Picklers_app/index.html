@@ -13,9 +13,9 @@
   <body>
     <!-- This is again a very rough draft of what we're going for -->
     <!-- Navbar -->
-    <nav class="navbar is-primary">
+    <nav class="navbar has-background-black is-fixed-top">
       <div class="navbar-brand">
-        <a class="navbar-item" href="index.html">
+        <a class="navbar-item has-text-white" href="index.html">
           <!-- <img src="assets/logo.png" alt="Picklers Logo" class="image is-32x32"> -->
           <span class="ml-2 is-size-4">Picklers</span>
         </a>
@@ -26,27 +26,61 @@
         </div>
       </div>
 
-      <div id="navbarMenu" class="navbar-menu">
+      <div id="navbarMenu" class="navbar-menu has-background-black">
         <div class="navbar-start">
-          <a class="navbar-item" href="#home">Home</a>
-          <a class="navbar-item" href="#tournaments">Tournaments</a>
-          <a class="navbar-item" href="#pickler-pointer">Pickler Pointer</a>
-          <a class="navbar-item" href="#profile">Profile</a>
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="#home"
+            >Home</a
+          >
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="#tournaments"
+            >Tournaments</a
+          >
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="#pickler-pointer"
+            >Pickler Pointer</a
+          >
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="#profile"
+            >Profile</a
+          >
+        </div>
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <figure class="image is-48x48">
+            <a class="has-text-white"   href="profile.html">
+              <img
+                class="is-rounded"
+                src="https://via.placeholder.com/48"
+                alt="Profile Picture"
+              />
+            </a>
+          </figure>
         </div>
       </div>
     </nav>
 
     <!-- Main Hero Section -->
-    <section class="hero is-primary is-bold">
+    <section class="hero is-primary is-bold is-fullheight">
       <div class="hero-body">
-        <div class="container has-text-centered">
-          <h1 class="title">Welcome to Picklers! 🥒</h1>
-           <button id="fetchData" class="button is-primary">Get API Data</button>
-          <p id="apiResponse" class="mt-4"></p>
-          <h2 class="subtitle">
-            Your go-to app for Pickleball tournaments, rankings, and social fun!
-          </h2>
-          <a href="#tournaments" class="button is-info is-large">Get Started</a>
+        <div class="container is-primary">
+          <div class="container has-text-centered">
+            <h1 class="title">Welcome to Picklers! 🥒</h1>
+            <!-- <button id="fetchData" class="button is-primary">Get API Data</button> -->
+            <p id="apiResponse" class="mt-4"></p>
+            <h2 class="subtitle">
+              Your go-to app for Pickleball tournaments, rankings, and social
+              fun!
+            </h2>
+            <a href="#tournaments" class="button is-outlined is-light is-large"
+              >Get Started</a
+            >
+          </div>
         </div>
       </div>
     </section>
@@ -156,21 +190,23 @@
           menu.classList.toggle("is-active");
         });
       });
-        document.getElementById("fetchData").addEventListener("click", async function() {
-        try {
-          const response = await fetch("http://localhost:3000/api/players");
-          const players = await response.json();
-          let output = "<h3>Players:</h3><ul>";
-          players.forEach(player => {
-            output += `<li>${player.name} - Rank: ${player.rank}</li>`;
-          });
-          output += "</ul>";
-          document.getElementById("apiResponse").innerHTML = output;
-        } catch (error) {
-          document.getElementById("apiResponse").innerHTML =
-            "Error fetching data.";
-        }
-      });
+      document
+        .getElementById("fetchData")
+        .addEventListener("click", async function () {
+          try {
+            const response = await fetch("http://localhost:3000/api/players");
+            const players = await response.json();
+            let output = "<h3>Players:</h3><ul>";
+            players.forEach((player) => {
+              output += `<li>${player.name} - Rank: ${player.rank}</li>`;
+            });
+            output += "</ul>";
+            document.getElementById("apiResponse").innerHTML = output;
+          } catch (error) {
+            document.getElementById("apiResponse").innerHTML =
+              "Error fetching data.";
+          }
+        });
     </script>
   </body>
 </html>

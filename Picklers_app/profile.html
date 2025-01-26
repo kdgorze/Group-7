@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .settings-popout {
+      position: fixed;
+      top: 50%;
+      right: -100%;
+      transform: translateY(-50%);
+      width: 300px;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      transition: right 0.3s ease;
+      z-index: 1000;
+    }
+    .settings-popout.is-active {
+      right: 20px;
+    }
+  </style>
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="box">
+            <div class="level">
+              <div class="level-left">
+                <figure class="image is-128x128">
+                  <img class="is-rounded" src="https://via.placeholder.com/128" alt="Profile Picture">
+                </figure>
+                <div class="ml-4">
+                  <h1 class="title" id="user-name">Loading...</h1>
+                  <p class="subtitle" id="user-email">Loading...</p>
+                </div>
+              </div>
+              <div class="level-right">
+                <button class="button is-primary" id="settings-button">Settings</button>
+              </div>
+            </div>
+
+            <hr>
+
+            <div>
+              <h2 class="title is-4">Your Activity</h2>
+              <div id="activity-feed">
+                <p>Loading activity...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Settings Popout -->
+  <div class="settings-popout" id="settings-popout">
+    <div class="p-4">
+      <h2 class="title is-5">Settings</h2>
+      <hr>
+      <div class="field">
+        <label class="label">Change Username</label>
+        <div class="control">
+          <input class="input" type="text" id="username-input" placeholder="New username">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Change Email</label>
+        <div class="control">
+          <input class="input" type="email" id="email-input" placeholder="New email">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Change Password</label>
+        <div class="control">
+          <input class="input" type="password" id="password-input" placeholder="New password">
+        </div>
+      </div>
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-success" id="save-settings">Save</button>
+        </div>
+        <div class="control">
+          <button class="button is-light" id="close-settings">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample API URL (replace with your actual API endpoint)
+    const apiUrl = "https://ctrangel.it.pointpark.edu/api/"; // api in progress, not functional at the moment
+
+    // Fetch user data from the API
+    async function fetchUserData() {
+      try {
+        const response = await axios.get(apiUrl);
+        const userData = response.data;
+
+        document.getElementById('user-name').textContent = userData.name;
+        document.getElementById('user-email').textContent = userData.email;
+
+        // Simulate activity feed
+        const activityFeed = document.getElementById('activity-feed');
+        activityFeed.innerHTML = userData.activities
+          .map(activity => `<p>${activity}</p>`)
+          .join('');
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        document.getElementById('activity-feed').textContent = "Failed to load activity.";
+      }
+    }
+
+    // Handle settings popout toggle
+    const settingsButton = document.getElementById('settings-button');
+    const settingsPopout = document.getElementById('settings-popout');
+    const closeSettings = document.getElementById('close-settings');
+
+    settingsButton.addEventListener('click', () => {
+      settingsPopout.classList.add('is-active');
+    });
+
+    closeSettings.addEventListener('click', () => {
+      settingsPopout.classList.remove('is-active');
+    });
+
+    // Handle settings save button (stub for actual functionality)
+    document.getElementById('save-settings').addEventListener('click', () => {
+      const newUsername = document.getElementById('username-input').value;
+      const newEmail = document.getElementById('email-input').value;
+      const newPassword = document.getElementById('password-input').value;
+
+      console.log("Saving settings:", { newUsername, newEmail, newPassword });
+
+      // Perform API call to save settings here
+      settingsPopout.classList.remove('is-active');
+    });
+
+    // Initialize user data fetch
+    fetchUserData();
+  </script>
+</body>
+</html>
