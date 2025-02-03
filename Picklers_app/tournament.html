@@ -9,87 +9,400 @@
       href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"
     />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Flex layout to keep footer at bottom */
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .main-content {
+        flex: 1;
+      }
+      /* Details container styling for inline tournament details */
+      #tournament-details-container {
+        margin-top: 1rem;
+        display: none;
+      }
+      /* Leaderboard table styling (center text) */
+      table th,
+      table td {
+        text-align: center;
+      }
+    </style>
   </head>
   <body>
     <!-- Navbar -->
-    <nav class="navbar is-primary">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="index.html">
-            <span class="ml-2 is-size-4">Picklers</span>
-          </a>
-          <div class="navbar-burger burger" data-target="navbarMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
+    <nav class="navbar has-background-black">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-white" href="index.html">
+          <span class="ml-2 is-size-4">Picklers</span>
+        </a>
+        <div class="navbar-burger burger" data-target="navbarMenu">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-  
-        <div id="navbarMenu" class="navbar-menu">
-          <div class="navbar-start">
-            <a class="navbar-item" href="index.html">Home</a>
-            <a class="navbar-item" href="tournaments.html">Tournaments</a>
-            <a class="navbar-item" href="#pickler-pointer">Pickler Pointer</a>
-            <a class="navbar-item" href="#profile">Profile</a>
-          </div>
+      </div>
+      <div id="navbarMenu" class="navbar-menu has-background-black">
+        <div class="navbar-start">
+          <a class="navbar-item has-text-white" href="index.html">Home</a>
+          <a class="navbar-item has-text-white" href="tournament.html">Tournaments</a>
+          <a class="navbar-item has-text-white" href="pickler-pointer.html">Pickler Pointer</a>
+          <a class="navbar-item has-text-white" href="profile.html">Profile</a>
         </div>
-      </nav>
-  
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <figure class="image is-48x48">
+            <a class="has-text-white" href="profile.html">
+              <img
+                class="is-rounded"
+                src="https://via.placeholder.com/48"
+                alt="Profile Picture"
+              />
+            </a>
+          </figure>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Main Content Section -->
+    <div class="main-content">
       <!-- Tournaments Section -->
       <section class="section has-background-light">
         <div class="container">
-          <h2 class="title is-3">IDFSGHIOSDFGHNOIGDHO</h2>
-          <p>
-            Check out our latest tournaments and register to compete against the
-            best!
-          </p>
-          <div class="columns is-multiline">
-            <div class="column is-one-third">
-              <div class="card">
-                <div class="card-content">
-                  <p class="title">Spring Tournament</p>
-                  <p class="subtitle">March 2025</p>
-                  <p>Compete in our annual spring event!</p>
-                </div>
-                <footer class="card-footer">
-                  <a href="#" class="card-footer-item">Learn More</a>
-                  <a href="#" class="card-footer-item">Register</a>
-                </footer>
-              </div>
+          <div class="level">
+            <div class="level-left">
+              <h2 class="title is-3">Tournaments</h2>
             </div>
-            <div class="column is-one-third">
-              <div class="card">
-                <div class="card-content">
-                  <p class="title">Summer Showdown</p>
-                  <p class="subtitle">June 2025</p>
-                  <p>Get ready for a hot summer tournament!</p>
-                </div>
-                <footer class="card-footer">
-                  <a href="#" class="card-footer-item">Learn More</a>
-                  <a href="#" class="card-footer-item">Register</a>
-                </footer>
-              </div>
-            </div>
-            <div class="column is-one-third">
-              <div class="card">
-                <div class="card-content">
-                  <p class="title">Fall Championships</p>
-                  <p class="subtitle">October 2025</p>
-                  <p>Our grand finale tournament of the year!</p>
-                </div>
-                <footer class="card-footer">
-                  <a href="#" class="card-footer-item">Learn More</a>
-                  <a href="#" class="card-footer-item">Register</a>
-                </footer>
-              </div>
+            <div class="level-right">
+              <!-- Create Tournament Button -->
+              <button id="create-tournament-btn" class="button is-link">Create Tournament</button>
             </div>
           </div>
+          <p>Check out our latest tournaments and register to compete against the best!</p>
+          <div class="columns is-multiline" id="tournaments-container">
+            <p>Loading tournaments...</p>
+          </div>
+          <!-- Tournament Details Container (appears when a tournament card is clicked) -->
+          <div id="tournament-details-container" class="box"></div>
         </div>
       </section>
-  
-      <footer class="footer has-background-primary has-text-white">
-        <div class="content has-text-centered">
-          <p>&copy; 2025 Picklers App | Built with ❤️ from group-7</p>
+      
+      <!-- Leaderboard Section -->
+      <section class="section">
+        <div class="container">
+          <h2 class="title is-3">Leaderboard</h2>
+          <table class="table is-fullwidth is-striped is-hoverable">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Total Points</th>
+                <th>H2H</th>
+                <th>Unique Opponents</th>
+                <th>Matches</th>
+                <th>Sets</th>
+                <th>Games</th>
+                <th>Last Match Played</th>
+                <th>Rating</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <tr>
+                <td colspan="10">Loading leaderboard...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </footer>
-</body>
+      </section>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer has-background-primary has-text-white">
+      <div class="content has-text-centered">
+        <p>&copy; 2025 Picklers App | Built with ❤️ from group-7</p>
+      </div>
+    </footer>
+    
+    <!-- Create Tournament Modal -->
+    <div class="modal" id="create-tournament-modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Create Tournament</p>
+          <button class="delete" aria-label="close" id="close-create-modal"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="field">
+            <label class="label">Title</label>
+            <div class="control">
+              <input class="input" type="text" id="create-title" placeholder="Tournament Title">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Subtitle</label>
+            <div class="control">
+              <input class="input" type="text" id="create-subtitle" placeholder="e.g., March 2025">
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Description</label>
+            <div class="control">
+              <textarea class="textarea" id="create-description" placeholder="Short description"></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Details</label>
+            <div class="control">
+              <textarea class="textarea" id="create-details" placeholder="Detailed information"></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Registration Info</label>
+            <div class="control">
+              <textarea class="textarea" id="create-registration" placeholder="Registration details"></textarea>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" id="create-tournament-btn-submit">Create</button>
+          <button class="button" id="cancel-create-btn">Cancel</button>
+        </footer>
+      </div>
+    </div>
+    
+    <script>
+      // Navbar burger toggle for mobile devices
+      document.addEventListener("DOMContentLoaded", () => {
+        const burger = document.querySelector(".burger");
+        const menu = document.getElementById(burger.dataset.target);
+        burger.addEventListener("click", () => {
+          burger.classList.toggle("is-active");
+          menu.classList.toggle("is-active");
+        });
+        loadTournaments();
+        loadLeaderboard();
+      });
+      
+      // --- Tournament Data and Functions ---
+      let tournamentsData = [];
+      
+      // Simulated API call to fetch tournaments
+      function fetchTournaments() {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve([
+              {
+                title: "Spring Tournament",
+                subtitle: "March 2025",
+                description: "Compete in our annual spring event!",
+                details: "This tournament features top players from the region competing in a double-elimination format. The winner gets a trophy and a cash prize.",
+                registration: "Registration is open until February 28, 2025. Fee: $50."
+              },
+              {
+                title: "Summer Showdown",
+                subtitle: "June 2025",
+                description: "Get ready for a hot summer tournament!",
+                details: "The Summer Showdown is a fast-paced event with singles and doubles competitions. All skill levels welcome.",
+                registration: "Registration closes on May 31, 2025. Fee: $40."
+              },
+              {
+                title: "Fall Championships",
+                subtitle: "October 2025",
+                description: "Our grand finale tournament of the year!",
+                details: "Fall Championships brings together the best of the best in a knockout tournament. Expect intense competition and high stakes.",
+                registration: "Registration is now open. Fee: $60."
+              }
+            ]);
+          }, 1000);
+        });
+      }
+      
+      // Load tournaments into the container
+      function loadTournaments() {
+        const container = document.getElementById("tournaments-container");
+        container.innerHTML = "<p>Loading tournaments...</p>";
+        fetchTournaments().then(data => {
+          tournamentsData = data; // store fetched data globally
+          container.innerHTML = "";
+          tournamentsData.forEach((tournament, index) => {
+            const column = document.createElement("div");
+            column.className = "column is-one-third";
+            const card = document.createElement("div");
+            card.className = "card tournament-card";
+            card.style.cursor = "pointer";
+            card.innerHTML = `
+              <div class="card-content">
+                <p class="title">${tournament.title}</p>
+                <p class="subtitle">${tournament.subtitle}</p>
+                <p>${tournament.description}</p>
+              </div>
+            `;
+            // When a tournament card is clicked, show its details below the list
+            card.addEventListener("click", () => {
+              showTournamentDetails(index);
+            });
+            column.appendChild(card);
+            container.appendChild(column);
+          });
+        });
+      }
+      
+      // Show tournament details in the details container below the tournament list
+      function showTournamentDetails(index) {
+        const tournament = tournamentsData[index];
+        const detailsContainer = document.getElementById("tournament-details-container");
+        detailsContainer.innerHTML = `
+          <div class="content">
+            <h3 class="title is-4">${tournament.title} Details</h3>
+            <p><strong>${tournament.subtitle}</strong></p>
+            <p>${tournament.details}</p>
+            <p><strong>Registration Info:</strong> ${tournament.registration}</p>
+            <button class="button is-light" id="close-details-btn">Close Details</button>
+          </div>
+        `;
+        detailsContainer.style.display = "block";
+        document.getElementById("close-details-btn").addEventListener("click", () => {
+          detailsContainer.style.display = "none";
+        });
+      }
+      
+      // --- Create Tournament Modal Handling ---
+      document.getElementById("create-tournament-btn").addEventListener("click", () => {
+        document.getElementById("create-tournament-modal").classList.add("is-active");
+      });
+      
+      function closeCreateModal() {
+        document.getElementById("create-tournament-modal").classList.remove("is-active");
+      }
+      
+      document.getElementById("close-create-modal").addEventListener("click", closeCreateModal);
+      document.getElementById("cancel-create-btn").addEventListener("click", closeCreateModal);
+      
+      document.getElementById("create-tournament-btn-submit").addEventListener("click", () => {
+        const title = document.getElementById("create-title").value.trim();
+        const subtitle = document.getElementById("create-subtitle").value.trim();
+        const description = document.getElementById("create-description").value.trim();
+        const details = document.getElementById("create-details").value.trim();
+        const registration = document.getElementById("create-registration").value.trim();
+        
+        if (title && subtitle && description && details && registration) {
+          const newTournament = { title, subtitle, description, details, registration };
+          tournamentsData.push(newTournament);
+          loadTournaments();
+          // Clear the form fields
+          document.getElementById("create-title").value = "";
+          document.getElementById("create-subtitle").value = "";
+          document.getElementById("create-description").value = "";
+          document.getElementById("create-details").value = "";
+          document.getElementById("create-registration").value = "";
+          closeCreateModal();
+        } else {
+          alert("Please fill in all fields to create a tournament.");
+        }
+      });
+      
+      // --- Leaderboard Section ---
+      // Simulated API call to fetch leaderboard data using your specific players
+      function fetchLeaderboard() {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve([
+              {
+                rank: 1,
+                player: "Christian Rangel",
+                totalPoints: 1600,
+                h2h: "4-0",
+                uniqueOpponents: 5,
+                matches: 12,
+                sets: 30,
+                games: 50,
+                lastMatch: "2025-01-20",
+                rating: 4.9
+              },
+              {
+                rank: 2,
+                player: "Kai G",
+                totalPoints: 1500,
+                h2h: "3-1",
+                uniqueOpponents: 4,
+                matches: 11,
+                sets: 28,
+                games: 45,
+                lastMatch: "2025-01-19",
+                rating: 4.7
+              },
+              {
+                rank: 3,
+                player: "Juan B",
+                totalPoints: 1450,
+                h2h: "2-2",
+                uniqueOpponents: 5,
+                matches: 10,
+                sets: 26,
+                games: 44,
+                lastMatch: "2025-01-18",
+                rating: 4.6
+              },
+              {
+                rank: 4,
+                player: "Sisan T",
+                totalPoints: 1400,
+                h2h: "1-2",
+                uniqueOpponents: 4,
+                matches: 9,
+                sets: 25,
+                games: 42,
+                lastMatch: "2025-01-17",
+                rating: 4.5
+              },
+              {
+                rank: 5,
+                player: "Mark V",
+                totalPoints: 1350,
+                h2h: "0-3",
+                uniqueOpponents: 6,
+                matches: 8,
+                sets: 22,
+                games: 40,
+                lastMatch: "2025-01-16",
+                rating: 4.3
+              }
+            ]);
+          }, 1000);
+        });
+      }
+      
+      function loadLeaderboard() {
+        fetchLeaderboard().then(data => {
+          const tbody = document.getElementById("leaderboard-body");
+          tbody.innerHTML = data
+            .map(item => `
+              <tr>
+                <td>${item.rank}</td>
+                <td>${item.player}</td>
+                <td>${item.totalPoints}</td>
+                <td>${item.h2h}</td>
+                <td>${item.uniqueOpponents}</td>
+                <td>${item.matches}</td>
+                <td>${item.sets}</td>
+                <td>${item.games}</td>
+                <td>${item.lastMatch}</td>
+                <td>${item.rating}</td>
+              </tr>
+            `).join("");
+        }).catch(() => {
+          document.getElementById("leaderboard-body").innerHTML = "<tr><td colspan='10'>Error loading leaderboard.</td></tr>";
+        });
+      }
+      
+      // Load leaderboard when DOM is ready
+      document.addEventListener("DOMContentLoaded", loadLeaderboard);
+    </script>
+  </body>
 </html>

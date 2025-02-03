@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pickler Pointer</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      /* Basic styling for feed posts and friend cards */
+      .feed-post {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+      }
+      .friend-card {
+        border: 1px solid #ddd;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar has-background-black">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-white" href="index.html">
+          <span class="ml-2 is-size-4">Picklers</span>
+        </a>
+        <div class="navbar-burger burger" data-target="navbarMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <div id="navbarMenu" class="navbar-menu has-background-black">
+        <div class="navbar-start">
+          <a class="navbar-item has-text-white" href="index.html">Home</a>
+          <a class="navbar-item has-text-white" href="tournament.html">Tournaments</a>
+          <a class="navbar-item has-text-white" href="pickler-pointer.html">Pickler Pointer</a>
+          <a class="navbar-item has-text-white" href="profile.html">Profile</a>
+        </div>
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <figure class="image is-48x48">
+            <a class="has-text-white" href="profile.html">
+              <img
+                class="is-rounded"
+                src="https://via.placeholder.com/48"
+                alt="Profile Picture"
+              />
+            </a>
+          </figure>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Section -->
+    <section class="section">
+      <div class="container">
+        <h1 class="title">Pickler Pointer</h1>
+        <div class="columns">
+          <!-- Feed Column -->
+          <div class="column is-6">
+            <div class="level">
+              <div class="level-left">
+                <h2 class="subtitle">Feed</h2>
+              </div>
+              <div class="level-right">
+                <!-- Small plus button to open the new post modal -->
+                <button class="button is-small is-info" id="open-post-modal">+</button>
+              </div>
+            </div>
+            <div id="feed">
+              <p>Loading posts...</p>
+            </div>
+          </div>
+          <!-- Friends Column -->
+          <div class="column is-6">
+            <h2 class="subtitle">Find Pickler Friends</h2>
+            <div id="friends">
+              <!-- Friend Card: Mark V -->
+              <div class="friend-card">
+                <div class="media">
+                  <div class="media-left">
+                    <figure class="image is-48x48">
+                      <img
+                        class="is-rounded"
+                        src="https://via.placeholder.com/48"
+                        alt="Mark V"
+                      />
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <p class="title is-5">Mark V</p>
+                    <p class="subtitle is-6">@markv</p>
+                  </div>
+                  <div class="media-right">
+                    <button class="button is-small is-primary follow-btn" data-username="markv">
+                      Follow
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Friend Card: Kai G -->
+              <div class="friend-card">
+                <div class="media">
+                  <div class="media-left">
+                    <figure class="image is-48x48">
+                      <img
+                        class="is-rounded"
+                        src="https://via.placeholder.com/48"
+                        alt="Kai G"
+                      />
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <p class="title is-5">Kai G</p>
+                    <p class="subtitle is-6">@kaig</p>
+                  </div>
+                  <div class="media-right">
+                    <button class="button is-small is-primary follow-btn" data-username="kaig">
+                      Follow
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Friend Card: Sisan T -->
+              <div class="friend-card">
+                <div class="media">
+                  <div class="media-left">
+                    <figure class="image is-48x48">
+                      <img
+                        class="is-rounded"
+                        src="https://via.placeholder.com/48"
+                        alt="Sisan T"
+                      />
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <p class="title is-5">Sisan T</p>
+                    <p class="subtitle is-6">@sisant</p>
+                  </div>
+                  <div class="media-right">
+                    <button class="button is-small is-primary follow-btn" data-username="sisant">
+                      Follow
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Friend Card: Christian C -->
+              <div class="friend-card">
+                <div class="media">
+                  <div class="media-left">
+                    <figure class="image is-48x48">
+                      <img
+                        class="is-rounded"
+                        src="https://via.placeholder.com/48"
+                        alt="Christian C"
+                      />
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <p class="title is-5">Christian C</p>
+                    <p class="subtitle is-6">@christianc</p>
+                  </div>
+                  <div class="media-right">
+                    <button class="button is-small is-primary follow-btn" data-username="christianc">
+                      Follow
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Friend Card: Juan B -->
+              <div class="friend-card">
+                <div class="media">
+                  <div class="media-left">
+                    <figure class="image is-48x48">
+                      <img
+                        class="is-rounded"
+                        src="https://via.placeholder.com/48"
+                        alt="Juan B"
+                      />
+                    </figure>
+                  </div>
+                  <div class="media-content">
+                    <p class="title is-5">Juan B</p>
+                    <p class="subtitle is-6">@juanb</p>
+                  </div>
+                  <div class="media-right">
+                    <button class="button is-small is-primary follow-btn" data-username="juanb">
+                      Follow
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Courts Section -->
+        <div>
+          <h2 class="subtitle">Nearby Courts</h2>
+          <div class="content">
+            <table class="table is-fullwidth">
+              <thead>
+                <tr>
+                  <th>Court Name</th>
+                  <th>Address</th>
+                </tr>
+              </thead>
+              <tbody id="courts-list">
+                <tr>
+                  <td colspan="2">Loading courts...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal for Creating a New Post -->
+    <div class="modal" id="post-modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Create a New Post</p>
+          <button class="delete" aria-label="close" id="close-post-modal"></button>
+        </header>
+        <section class="modal-card-body">
+          <textarea id="modal-post-content" class="textarea" placeholder="What's on your mind?"></textarea>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" id="modal-post-btn">Post</button>
+          <button class="button" id="cancel-post-btn">Cancel</button>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      /* ==============================
+         Simulated API Calls
+      ============================== */
+      // Simulated API call for feed posts
+      function fetchFeedPosts() {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve([
+              {
+                name: "Mark V",
+                post: "Had an awesome match at Schenley Park today!",
+                timestamp: "1 hour ago"
+              },
+              {
+                name: "Kai G",
+                post: "Looking for a doubles partner for tomorrow's game!",
+                timestamp: "3 hours ago"
+              },
+              {
+                name: "Sisan T",
+                post: "Just won my match against a tough opponent at North Shore Courts!",
+                timestamp: "5 hours ago"
+              },
+              {
+                name: "Christian C",
+                post: "Anyone up for practice at Riverview Park later?",
+                timestamp: "8 hours ago"
+              },
+              {
+                name: "Juan B",
+                post: "Loving the vibe at the new courts downtown!",
+                timestamp: "1 day ago"
+              }
+            ]);
+          }, 1000);
+        });
+      }
+
+      // Simulated API call for nearby courts (with name and address)
+      function fetchCourts() {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve([
+              {
+                name: "Schenley Park Pickleball Courts",
+                address: "123 Schenley Ave, Pittsburgh, PA 15213"
+              },
+              {
+                name: "North Shore Courts",
+                address: "456 North Shore Dr, Pittsburgh, PA 15212"
+              },
+              {
+                name: "Riverview Park Courts",
+                address: "789 Riverview Rd, Pittsburgh, PA 15220"
+              },
+              {
+                name: "Southside Pickleball Center",
+                address: "101 Southside St, Pittsburgh, PA 15203"
+              },
+              {
+                name: "Duquesne University Courts",
+                address: "202 Duquesne Blvd, Pittsburgh, PA 15282"
+              }
+            ]);
+          }, 1000);
+        });
+      }
+
+      // Simulated API call for following a friend
+      function followFriend(username) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve({ success: true, username: username });
+          }, 500);
+        });
+      }
+
+      /* ==============================
+         DOM Update Functions
+      ============================== */
+      // Load feed posts and update the DOM
+      function loadFeedPosts() {
+        fetchFeedPosts()
+          .then((posts) => {
+            const feedHTML = posts
+              .map(
+                (post) => `
+                  <div class="feed-post">
+                    <p><strong>${post.name}</strong> posted: ${post.post}</p>
+                    <small>${post.timestamp}</small>
+                  </div>
+                `
+              )
+              .join("");
+            document.getElementById("feed").innerHTML = feedHTML;
+          })
+          .catch(() => {
+            document.getElementById("feed").innerHTML =
+              "<p>Error loading posts.</p>";
+          });
+      }
+
+      // Load courts and update the DOM in a table
+      function loadCourts() {
+        fetchCourts()
+          .then((courts) => {
+            const courtsHTML = courts
+              .map(
+                (court) => `
+                  <tr>
+                    <td>${court.name}</td>
+                    <td>${court.address}</td>
+                  </tr>
+                `
+              )
+              .join("");
+            document.getElementById("courts-list").innerHTML = courtsHTML;
+          })
+          .catch(() => {
+            document.getElementById("courts-list").innerHTML =
+              "<tr><td colspan='2'>Error loading courts.</td></tr>";
+          });
+      }
+
+      // Set up follow button event listeners
+      function setupFollowButtons() {
+        const buttons = document.querySelectorAll(".follow-btn");
+        buttons.forEach((button) => {
+          button.addEventListener("click", toggleFollow);
+        });
+      }
+
+      // Toggle follow button state with a simulated API call
+      function toggleFollow(event) {
+        const button = event.currentTarget;
+        const username = button.getAttribute("data-username");
+        button.disabled = true; // disable while processing
+        followFriend(username)
+          .then((response) => {
+            if (response.success) {
+              // Toggle button text and styling
+              if (button.textContent.trim() === "Follow") {
+                button.textContent = "Following";
+                button.classList.remove("is-primary");
+                button.classList.add("is-success");
+              } else {
+                button.textContent = "Follow";
+                button.classList.remove("is-success");
+                button.classList.add("is-primary");
+              }
+            }
+            button.disabled = false;
+          })
+          .catch(() => {
+            console.error("Error following friend");
+            button.disabled = false;
+          });
+      }
+
+      /* ==============================
+         Post Creation and Feed Functions
+      ============================== */
+      // Function to add a post to the feed and optionally save it to local storage
+      function addPostToFeed(post, save = true) {
+        const feedContainer = document.getElementById("feed");
+        const postElement = document.createElement("div");
+        postElement.classList.add("feed-post");
+        postElement.innerHTML = `
+          <p><strong>${post.user}</strong> posted: ${post.content}</p>
+          <small>${post.timestamp}</small>
+        `;
+        // Prepend the post so that the newest posts appear at the top
+        feedContainer.insertBefore(postElement, feedContainer.firstChild);
+        if (save) {
+          const storedPosts = JSON.parse(localStorage.getItem("posts")) || [];
+          storedPosts.unshift(post);
+          localStorage.setItem("posts", JSON.stringify(storedPosts));
+        }
+      }
+
+      // Load existing posts from local storage and display them
+      function loadPosts() {
+        const storedPosts = JSON.parse(localStorage.getItem("posts")) || [];
+        const feedContainer = document.getElementById("feed");
+        feedContainer.innerHTML = "";
+        if (storedPosts.length === 0) {
+          feedContainer.innerHTML = "<p>No posts yet.</p>";
+        } else {
+          storedPosts.forEach((post) => addPostToFeed(post, false));
+        }
+      }
+
+      /* ==============================
+         Modal and Authentication Handlers
+      ============================== */
+      document.addEventListener("DOMContentLoaded", () => {
+        // Navbar burger toggle for mobile devices
+        const burger = document.querySelector(".burger");
+        const menu = document.getElementById(burger.dataset.target);
+        burger.addEventListener("click", () => {
+          burger.classList.toggle("is-active");
+          menu.classList.toggle("is-active");
+        });
+        loadFeedPosts();
+        loadCourts();
+        setupFollowButtons();
+
+        // Modal open and close handlers
+        document.getElementById("open-post-modal").addEventListener("click", openPostModal);
+        document.getElementById("cancel-post-btn").addEventListener("click", closePostModal);
+        document.getElementById("close-post-modal").addEventListener("click", closePostModal);
+        document.getElementById("modal-post-btn").addEventListener("click", () => {
+          const postContent = document.getElementById("modal-post-content").value.trim();
+          const currentUser = localStorage.getItem("currentUser") || "Anonymous";
+          if (postContent) {
+            const post = {
+              user: currentUser,
+              content: postContent,
+              timestamp: new Date().toLocaleString()
+            };
+            addPostToFeed(post);
+            document.getElementById("modal-post-content").value = "";
+            closePostModal();
+          }
+        });
+      });
+
+      function openPostModal() {
+        document.getElementById("post-modal").classList.add("is-active");
+      }
+
+      function closePostModal() {
+        document.getElementById("post-modal").classList.remove("is-active");
+      }
+    </script>
+  </body>
+</html>

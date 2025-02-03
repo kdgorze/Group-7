@@ -1,149 +1,274 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile Dashboard</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <style>
-    .settings-popout {
-      position: fixed;
-      top: 50%;
-      right: -100%;
-      transform: translateY(-50%);
-      width: 300px;
-      background: #fff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      transition: right 0.3s ease;
-      z-index: 1000;
-    }
-    .settings-popout.is-active {
-      right: 20px;
-    }
-  </style>
-</head>
-<body>
-  <section class="section">
-    <div class="container">
-      <div class="columns is-centered">
-        <div class="column is-8">
-          <div class="box">
-            <div class="level">
-              <div class="level-left">
-                <figure class="image is-128x128">
-                  <img class="is-rounded" src="https://via.placeholder.com/128" alt="Profile Picture">
-                </figure>
-                <div class="ml-4">
-                  <h1 class="title" id="user-name">Loading...</h1>
-                  <p class="subtitle" id="user-email">Loading...</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Picklers Profile</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+      .settings-popout {
+        position: fixed;
+        top: 50%;
+        right: -100%;
+        transform: translateY(-50%);
+        width: 300px;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        transition: right 0.3s ease;
+        z-index: 1000;
+      }
+      .settings-popout.is-active {
+        right: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar has-background-black ">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-white" href="index.html">
+          <!-- <img src="assets/logo.png" alt="Picklers Logo" class="image is-32x32"> -->
+          <span class="ml-2 is-size-4">Picklers</span>
+        </a>
+        <div class="navbar-burger burger" data-target="navbarMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+
+      <div id="navbarMenu" class="navbar-menu has-background-black">
+        <div class="navbar-start">
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="index.html"
+            >Home</a
+          >
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="tournament.html"
+            >Tournaments</a
+          >
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="pickler-pointer.html"
+            >Pickler Pointer</a
+          >
+          <a
+            class="navbar-item has-text-white has-background-black"
+            href="profile.html"
+            >Profile</a
+          >
+        </div>
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <figure class="image is-48x48">
+            <a class="has-text-white" href="profile.html">
+              <img
+                class="is-rounded"
+                src="https://via.placeholder.com/48"
+                alt="Profile Picture"
+              />
+            </a>
+          </figure>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Profile Section -->
+    <section class="section">
+      <div class="container">
+        <div class="columns is-centered">
+          <div class="column is-8">
+            <div class="box">
+              <div class="level">
+                <div class="level-left">
+                  <figure class="image is-128x128">
+                    <img
+                      class="is-rounded"
+                      src="https://via.placeholder.com/128"
+                      alt="Profile Picture"
+                    />
+                  </figure>
+                  <div class="ml-4">
+                    <h1 class="title" id="user-name">Loading...</h1>
+                    <p class="subtitle" id="user-summary">Loading...</p>
+                    <p>
+                      <strong>🏠 Home Court:</strong>
+                      <span id="home-court">Loading...</span>
+                    </p>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <button class="button is-primary" id="settings-button">
+                    Settings
+                  </button>
                 </div>
               </div>
-              <div class="level-right">
-                <button class="button is-primary" id="settings-button">Settings</button>
+
+              <hr />
+
+              <div>
+                <h2 class="title is-4">Recent Matches</h2>
+                <div id="recent-matches">
+                  <p>Loading matches...</p>
+                </div>
               </div>
-            </div>
 
-            <hr>
+              <hr />
 
-            <div>
-              <h2 class="title is-4">Your Activity</h2>
-              <div id="activity-feed">
-                <p>Loading activity...</p>
+              <div>
+                <h2 class="title is-4">Tournaments In</h2>
+                <div id="tournaments">
+                  <p>Loading tournaments...</p>
+                </div>
+              </div>
+
+              <hr />
+
+              <div>
+                <h2 class="title is-4">Friends</h2>
+                <div id="friends-list">
+                  <p>Loading friends...</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- Settings Popout -->
+    <div class="settings-popout" id="settings-popout">
+      <div class="p-4">
+        <h2 class="title is-5">Settings</h2>
+        <hr />
+        <div class="field">
+          <label class="label">Change Username</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              id="username-input"
+              placeholder="New username"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Change Summary</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              id="summary-input"
+              placeholder="New summary"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Change Home Court</label>
+          <div class="control">
+            <input
+              class="input"
+              type="text"
+              id="court-input"
+              placeholder="New home court"
+            />
+          </div>
+        </div>
+        <div class="field is-grouped">
+          <div class="control">
+            <button class="button is-success" id="save-settings">Save</button>
+          </div>
+          <div class="control">
+            <button class="button is-light" id="close-settings">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
-  </section>
 
-  <!-- Settings Popout -->
-  <div class="settings-popout" id="settings-popout">
-    <div class="p-4">
-      <h2 class="title is-5">Settings</h2>
-      <hr>
-      <div class="field">
-        <label class="label">Change Username</label>
-        <div class="control">
-          <input class="input" type="text" id="username-input" placeholder="New username">
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Change Email</label>
-        <div class="control">
-          <input class="input" type="email" id="email-input" placeholder="New email">
-        </div>
-      </div>
-      <div class="field">
-        <label class="label">Change Password</label>
-        <div class="control">
-          <input class="input" type="password" id="password-input" placeholder="New password">
-        </div>
-      </div>
-      <div class="field is-grouped">
-        <div class="control">
-          <button class="button is-success" id="save-settings">Save</button>
-        </div>
-        <div class="control">
-          <button class="button is-light" id="close-settings">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <script>
+      // --- SIGN-IN PROFILE FUNCTIONALITY ---
+      // Check if a user is signed in (set via index.html)
+      const currentUser = localStorage.getItem("currentUser");
 
-  <script>
-    // Sample API URL (replace with your actual API endpoint)
-    const apiUrl = "https://ctrangel.it.pointpark.edu/api/"; // api in progress, not functional at the moment
+      if (!currentUser) {
+        // If no user is signed in, replace the page content with a sign-in prompt.
+        document.write("<h1>Please sign in on the Home page to view your profile.</h1>");
+      } else {
+        // --- LOAD PROFILE DATA ---
+        // Use the signed-in user's name and hardcoded data for matches, tournaments, and friends.
+        const mockUserData = {
+          name: currentUser,
+          summary: "Passionate Pickleballer, competing in Local tournaments!",
+          homeCourt: "Point Park Pickleball Center",
+          recentMatches: [
+            " vs. Kai G. - 11-9, 11-7",
+            " vs. Juan B. - 11-6, 11-5",
+            " vs. Sisan T. - 11-8, 11-6",
+          ],
+          tournaments: [
+            "🏆 Pickleball Nationals 2024 - Quarter Finals",
+            "🥈 State Open Championship - Runner-up",
+            "🌟 City League Tournament - Winner",
+          ],
+          friends: [
+            "🎾 Juan B.",
+            "🎾 Kai G.",
+            "🎾 Sisan T.",
+            "🎾 Mark V.",
+          ],
+        };
 
-    // Fetch user data from the API
-    async function fetchUserData() {
-      try {
-        const response = await axios.get(apiUrl);
-        const userData = response.data;
+        // Function to load the profile data into the DOM
+        function loadUserData() {
+          document.getElementById("user-name").textContent = mockUserData.name;
+          document.getElementById("user-summary").textContent = mockUserData.summary;
+          document.getElementById("home-court").textContent = mockUserData.homeCourt;
 
-        document.getElementById('user-name').textContent = userData.name;
-        document.getElementById('user-email').textContent = userData.email;
+          document.getElementById("recent-matches").innerHTML =
+            mockUserData.recentMatches.map(match => `<p>🏓 ${match}</p>`).join("");
+          document.getElementById("tournaments").innerHTML =
+            mockUserData.tournaments.map(tournament => `<p>${tournament}</p>`).join("");
+          document.getElementById("friends-list").innerHTML =
+            mockUserData.friends.map(friend => `<p>${friend}</p>`).join("");
+        }
 
-        // Simulate activity feed
-        const activityFeed = document.getElementById('activity-feed');
-        activityFeed.innerHTML = userData.activities
-          .map(activity => `<p>${activity}</p>`)
-          .join('');
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        document.getElementById('activity-feed').textContent = "Failed to load activity.";
+        // --- SETTINGS POPOUT HANDLERS ---
+        const settingsButton = document.getElementById("settings-button");
+        const settingsPopout = document.getElementById("settings-popout");
+        const closeSettings = document.getElementById("close-settings");
+
+        settingsButton.addEventListener("click", () => {
+          settingsPopout.classList.add("is-active");
+        });
+
+        closeSettings.addEventListener("click", () => {
+          settingsPopout.classList.remove("is-active");
+        });
+
+        document.getElementById("save-settings").addEventListener("click", () => {
+          const newUsername = document.getElementById("username-input").value;
+          const newSummary = document.getElementById("summary-input").value;
+          const newCourt = document.getElementById("court-input").value;
+
+          if (newUsername) mockUserData.name = newUsername;
+          if (newSummary) mockUserData.summary = newSummary;
+          if (newCourt) mockUserData.homeCourt = newCourt;
+
+          loadUserData();
+          settingsPopout.classList.remove("is-active");
+        });
+
+        // Initialize profile view
+        loadUserData();
       }
-    }
-
-    // Handle settings popout toggle
-    const settingsButton = document.getElementById('settings-button');
-    const settingsPopout = document.getElementById('settings-popout');
-    const closeSettings = document.getElementById('close-settings');
-
-    settingsButton.addEventListener('click', () => {
-      settingsPopout.classList.add('is-active');
-    });
-
-    closeSettings.addEventListener('click', () => {
-      settingsPopout.classList.remove('is-active');
-    });
-
-    // Handle settings save button (stub for actual functionality)
-    document.getElementById('save-settings').addEventListener('click', () => {
-      const newUsername = document.getElementById('username-input').value;
-      const newEmail = document.getElementById('email-input').value;
-      const newPassword = document.getElementById('password-input').value;
-
-      console.log("Saving settings:", { newUsername, newEmail, newPassword });
-
-      // Perform API call to save settings here
-      settingsPopout.classList.remove('is-active');
-    });
-
-    // Initialize user data fetch
-    fetchUserData();
-  </script>
-</body>
+    </script>
+  </body>
 </html>
