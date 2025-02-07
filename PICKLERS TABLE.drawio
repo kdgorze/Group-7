@@ -1,0 +1,55 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 OPR/116.0.0.0 (Edition std-1)" version="26.0.11">
+  <diagram name="Page-1" id="BrTqEqXk123slU4AxZMG">
+    <mxGraphModel dx="2912" dy="1113" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="light-dark(#27349b, #121212)" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="duh8PUgQTY6NyynGF_86-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-2" target="duh8PUgQTY6NyynGF_86-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-2" value="&lt;u&gt;&lt;b&gt;LOGIN&lt;/b&gt;&lt;/u&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;user_id&lt;/div&gt;&lt;div&gt;username&lt;/div&gt;&lt;div&gt;password&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="375" y="100" width="100" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-4" target="duh8PUgQTY6NyynGF_86-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-4" target="duh8PUgQTY6NyynGF_86-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-4" target="duh8PUgQTY6NyynGF_86-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-4" value="&lt;b&gt;&lt;u&gt;PROFILE&lt;/u&gt;&lt;/b&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;user_id&lt;/div&gt;&lt;div&gt;profile_id&lt;/div&gt;&lt;div&gt;first_name&lt;/div&gt;&lt;div&gt;last_name&lt;/div&gt;&lt;div&gt;location&lt;/div&gt;&lt;div&gt;rank&lt;/div&gt;&lt;div&gt;friends&lt;/div&gt;&lt;div&gt;posts&lt;/div&gt;&lt;div&gt;total_points&lt;/div&gt;&lt;div&gt;total_matches&lt;/div&gt;&lt;div&gt;total_games&lt;/div&gt;&lt;div&gt;rating&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="370" y="250" width="110" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-5" value="&lt;u&gt;&lt;b&gt;TOURNAMENTS&lt;/b&gt;&lt;/u&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;profile_id&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;tournament_id&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;location&lt;/span&gt;&lt;/div&gt;&lt;div&gt;spring_t&lt;/div&gt;&lt;div&gt;summer_t&lt;/div&gt;&lt;div&gt;fall_t&lt;/div&gt;&lt;div&gt;court_id&lt;/div&gt;&lt;div&gt;date_created&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="575" width="110" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-8" target="duh8PUgQTY6NyynGF_86-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-6" value="&lt;b&gt;&lt;u&gt;LEADERBOARD&lt;/u&gt;&lt;/b&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;profile_id&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;court_id&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;h2h_stats&lt;/span&gt;&lt;/div&gt;&lt;div&gt;unique_opponets&lt;/div&gt;&lt;div&gt;most_recent_match&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="580" width="140" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-9" target="duh8PUgQTY6NyynGF_86-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-9" value="&lt;u&gt;&lt;b&gt;PICKLER_POINTER&lt;/b&gt;&lt;/u&gt;&lt;div&gt;&lt;u&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/u&gt;&lt;/div&gt;&lt;div&gt;profile_id&lt;/div&gt;&lt;div&gt;friends&lt;/div&gt;&lt;div&gt;posts&lt;/div&gt;&lt;div&gt;court_id&lt;/div&gt;&lt;div&gt;court_location&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="580" width="140" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-6" target="duh8PUgQTY6NyynGF_86-8">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="180" y="655" as="sourcePoint" />
+            <mxPoint x="460" y="655" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="duh8PUgQTY6NyynGF_86-8" target="duh8PUgQTY6NyynGF_86-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="duh8PUgQTY6NyynGF_86-8" value="&lt;b&gt;&lt;u&gt;HOME&lt;/u&gt;&lt;/b&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;posts&lt;/div&gt;&lt;div&gt;profile_id&lt;/div&gt;&lt;div&gt;tournament_id&lt;/div&gt;&lt;div&gt;pp_id&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="600" width="105" height="110" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
