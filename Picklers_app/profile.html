@@ -29,10 +29,9 @@
   </head>
   <body>
     <!-- Navbar -->
-    <nav class="navbar has-background-black ">
+    <nav class="navbar has-background-black">
       <div class="navbar-brand">
         <a class="navbar-item has-text-white" href="index.html">
-          <!-- <img src="assets/logo.png" alt="Picklers Logo" class="image is-32x32"> -->
           <span class="ml-2 is-size-4">Picklers</span>
         </a>
         <div class="navbar-burger burger" data-target="navbarMenu">
@@ -41,48 +40,21 @@
           <span></span>
         </div>
       </div>
-
       <div id="navbarMenu" class="navbar-menu has-background-black">
         <div class="navbar-start">
-          <a
-            class="navbar-item has-text-white has-background-black"
-            href="index.html"
-            >Home</a
-          >
-          <a
-            class="navbar-item has-text-white has-background-black"
-            href="tournament.html"
-            >Tournaments</a
-          >
-          <a
-            class="navbar-item has-text-white has-background-black"
-            href="pickler-pointer.html"
-            >Pickler Pointer</a
-          >
-          <a
-            class="navbar-item has-text-white has-background-black"
-            href="profile.html"
-            >Profile</a
-          >
+          <a class="navbar-item has-text-white" href="index.html">Home</a>
+          <a class="navbar-item has-text-white" href="tournament.html">Tournaments</a>
+          <a class="navbar-item has-text-white" href="pickler-pointer.html">Pickler Pointer</a>
+          <a class="navbar-item has-text-white" href="profile.html">Profile</a>
         </div>
-      </div>
-      <div class="navbar-end">
-        <div class="navbar-item">
-          <figure class="image is-48x48">
-            <a class="has-text-white" href="profile.html">
-              <img
-                class="is-rounded"
-                src="https://via.placeholder.com/48"
-                alt="Profile Picture"
-              />
-            </a>
-          </figure>
+        <div class="navbar-end" id="navbar-end">
+          <!-- This area will be updated with greeting and logout button -->
         </div>
       </div>
     </nav>
 
     <!-- Main Profile Section -->
-    <section class="section">
+    <section class="section" id="profile-container">
       <div class="container">
         <div class="columns is-centered">
           <div class="column is-8">
@@ -94,6 +66,7 @@
                       class="is-rounded"
                       src="https://via.placeholder.com/128"
                       alt="Profile Picture"
+                      id="profile-picture"
                     />
                   </figure>
                   <div class="ml-4">
@@ -152,34 +125,19 @@
         <div class="field">
           <label class="label">Change Username</label>
           <div class="control">
-            <input
-              class="input"
-              type="text"
-              id="username-input"
-              placeholder="New username"
-            />
+            <input class="input" type="text" id="username-input" placeholder="New username" />
           </div>
         </div>
         <div class="field">
           <label class="label">Change Summary</label>
           <div class="control">
-            <input
-              class="input"
-              type="text"
-              id="summary-input"
-              placeholder="New summary"
-            />
+            <input class="input" type="text" id="summary-input" placeholder="New summary" />
           </div>
         </div>
         <div class="field">
           <label class="label">Change Home Court</label>
           <div class="control">
-            <input
-              class="input"
-              type="text"
-              id="court-input"
-              placeholder="New home court"
-            />
+            <input class="input" type="text" id="court-input" placeholder="New home court" />
           </div>
         </div>
         <div class="field is-grouped">
@@ -194,81 +152,175 @@
     </div>
 
     <script>
-      // --- SIGN-IN PROFILE FUNCTIONALITY ---
-      // Check if a user is signed in (set via index.html)
-      const currentUser = localStorage.getItem("currentUser");
+      // Ensure cookies are sent with Axios requests
+      axios.defaults.withCredentials = true;
 
-      if (!currentUser) {
-        // If no user is signed in, replace the page content with a sign-in prompt.
-        document.write("<h1>Please sign in on the Home page to view your profile.</h1>");
-      } else {
-        // --- LOAD PROFILE DATA ---
-        // Use the signed-in user's name and hardcoded data for matches, tournaments, and friends.
-        const mockUserData = {
-          name: currentUser,
-          summary: "Passionate Pickleballer, competing in Local tournaments!",
-          homeCourt: "Point Park Pickleball Center",
-          recentMatches: [
-            " vs. Kai G. - 11-9, 11-7",
-            " vs. Juan B. - 11-6, 11-5",
-            " vs. Sisan T. - 11-8, 11-6",
-          ],
-          tournaments: [
-            "🏆 Pickleball Nationals 2024 - Quarter Finals",
-            "🥈 State Open Championship - Runner-up",
-            "🌟 City League Tournament - Winner",
-          ],
-          friends: [
-            "🎾 Juan B.",
-            "🎾 Kai G.",
-            "🎾 Sisan T.",
-            "🎾 Mark V.",
-          ],
-        };
+      // Store /me response in a variable to avoid multiple calls
+      let currentUser = null;
 
-        // Function to load the profile data into the DOM
-        function loadUserData() {
-          document.getElementById("user-name").textContent = mockUserData.name;
-          document.getElementById("user-summary").textContent = mockUserData.summary;
-          document.getElementById("home-court").textContent = mockUserData.homeCourt;
+      // Fetch current user data via GET /me
+      axios.get("http://localhost:3000/me")
+        .then(response => {
+          currentUser = response.data;
+          document.getElementById("user-name").textContent = currentUser.username;
+          document.getElementById("user-summary").textContent = currentUser.summary || "No summary available";
+          document.getElementById("home-court").textContent = currentUser.home_court || "Not set";
+          if (currentUser.profile_picture) {
+            document.getElementById("profile-picture").src = currentUser.profile_picture;
+            document.getElementById("navbar-avatar").src = currentUser.profile_picture;
+          }
+          // Update navbar with greeting and logout button
+          document.getElementById("navbar-end").innerHTML = `
+            <div class="navbar-item has-text-white">Hello, ${currentUser.username}</div>
+            <div class="navbar-item">
+              <button id="logout-btn" class="button is-danger">Log Out</button>
+            </div>
+          `;
+        })
+        .catch(error => {
+          console.error("Error loading profile data:", error);
+          // Instead of redirecting immediately, show an error message
+          document.getElementById("profile-container").innerHTML = "<h1>Error loading profile data. Please sign in.</h1>";
+        });
 
-          document.getElementById("recent-matches").innerHTML =
-            mockUserData.recentMatches.map(match => `<p>🏓 ${match}</p>`).join("");
-          document.getElementById("tournaments").innerHTML =
-            mockUserData.tournaments.map(tournament => `<p>${tournament}</p>`).join("");
-          document.getElementById("friends-list").innerHTML =
-            mockUserData.friends.map(friend => `<p>${friend}</p>`).join("");
+      // Logout functionality using POST /logout
+      document.addEventListener("click", function(e) {
+        if (e.target && e.target.id === "logout-btn") {
+          axios.post("http://localhost:3000/logout")
+            .then(() => {
+              window.location.href = "index.html";
+            })
+            .catch(error => {
+              console.error("Logout error:", error);
+              alert("Logout failed. Please try again.");
+            });
         }
+      });
 
-        // --- SETTINGS POPOUT HANDLERS ---
-        const settingsButton = document.getElementById("settings-button");
-        const settingsPopout = document.getElementById("settings-popout");
-        const closeSettings = document.getElementById("close-settings");
-
-        settingsButton.addEventListener("click", () => {
-          settingsPopout.classList.add("is-active");
+      // Load recent matches for current user
+      axios.get("http://localhost:3000/matches")
+        .then(response => {
+          const matches = response.data;
+          if (!currentUser) {
+            // If /me hasn't loaded yet, wait and then filter
+            return axios.get("http://localhost:3000/me").then(res => {
+              currentUser = res.data;
+              return matches;
+            });
+          }
+          return matches;
+        })
+        .then(matches => {
+          const userMatches = matches.filter(
+            match => match.player1_id == currentUser.id || match.player2_id == currentUser.id
+          );
+          const matchesContainer = document.getElementById("recent-matches");
+          if (userMatches.length === 0) {
+            matchesContainer.innerHTML = "<p>No matches found.</p>";
+          } else {
+            matchesContainer.innerHTML = userMatches
+              .map(match => `<p>Match ${match.id} | Score: ${match.score} | Played: ${match.played_at}</p>`)
+              .join("");
+          }
+        })
+        .catch(error => {
+          console.error("Error loading matches:", error);
+          document.getElementById("recent-matches").innerHTML = "<p>Error loading matches.</p>";
         });
 
-        closeSettings.addEventListener("click", () => {
-          settingsPopout.classList.remove("is-active");
+      // Load tournaments for current user (filter by tournaments created by current user)
+      axios.get("http://localhost:3000/tournaments")
+        .then(response => {
+          if (!currentUser) {
+            return axios.get("http://localhost:3000/me").then(res => {
+              currentUser = res.data;
+              return response.data;
+            });
+          }
+          return response.data;
+        })
+        .then(tournaments => {
+          const userTournaments = tournaments.filter(
+            tournament => tournament.created_by == currentUser.id
+          );
+          const tournamentsContainer = document.getElementById("tournaments");
+          if (userTournaments.length === 0) {
+            tournamentsContainer.innerHTML = "<p>No tournaments found.</p>";
+          } else {
+            tournamentsContainer.innerHTML = userTournaments
+              .map(tournament => `<p>${tournament.title} - ${tournament.subtitle}</p>`)
+              .join("");
+          }
+        })
+        .catch(err => {
+          console.error("Error loading tournaments:", err);
+          document.getElementById("tournaments").innerHTML = "<p>Error loading tournaments.</p>";
         });
 
-        document.getElementById("save-settings").addEventListener("click", () => {
-          const newUsername = document.getElementById("username-input").value;
-          const newSummary = document.getElementById("summary-input").value;
-          const newCourt = document.getElementById("court-input").value;
-
-          if (newUsername) mockUserData.name = newUsername;
-          if (newSummary) mockUserData.summary = newSummary;
-          if (newCourt) mockUserData.homeCourt = newCourt;
-
-          loadUserData();
-          settingsPopout.classList.remove("is-active");
+      // Load friends (users that current user is following)
+      axios.get("http://localhost:3000/me")
+        .then(res => {
+          currentUser = res.data;
+          return axios.get("http://localhost:3000/users/" + currentUser.id + "/following");
+        })
+        .then(response => {
+          const friends = response.data;
+          const friendsContainer = document.getElementById("friends-list");
+          if (friends.length === 0) {
+            friendsContainer.innerHTML = "<p>No friends found.</p>";
+          } else {
+            friendsContainer.innerHTML = friends
+              .map(friend => `<p>${friend.username}</p>`)
+              .join("");
+          }
+        })
+        .catch(err => {
+          console.error("Error loading friends:", err);
+          document.getElementById("friends-list").innerHTML = "<p>Error loading friends.</p>";
         });
 
-        // Initialize profile view
-        loadUserData();
-      }
+      // Settings Popout Handlers
+      const settingsButton = document.getElementById("settings-button");
+      const settingsPopout = document.getElementById("settings-popout");
+      const closeSettings = document.getElementById("close-settings");
+
+      settingsButton.addEventListener("click", () => {
+        settingsPopout.classList.add("is-active");
+      });
+
+      closeSettings.addEventListener("click", () => {
+        settingsPopout.classList.remove("is-active");
+      });
+
+      document.getElementById("save-settings").addEventListener("click", () => {
+        const newUsername = document.getElementById("username-input").value;
+        const newSummary = document.getElementById("summary-input").value;
+        const newCourt = document.getElementById("court-input").value;
+
+        axios.put("http://localhost:3000/me", {
+          username: newUsername,
+          summary: newSummary,
+          home_court: newCourt
+        })
+          .then(response => {
+            const updatedUser = response.data;
+            document.getElementById("user-name").textContent = updatedUser.username;
+            document.getElementById("user-summary").textContent = updatedUser.summary || "No summary available";
+            document.getElementById("home-court").textContent = updatedUser.home_court || "Not set";
+            settingsPopout.classList.remove("is-active");
+            // Update navbar greeting
+            document.getElementById("navbar-end").innerHTML = `
+              <div class="navbar-item has-text-white">Hello, ${updatedUser.username}</div>
+              <div class="navbar-item">
+                <button id="logout-btn" class="button is-danger">Log Out</button>
+              </div>
+            `;
+          })
+          .catch(err => {
+            console.error("Error updating settings:", err);
+            alert("Failed to update settings.");
+          });
+      });
     </script>
   </body>
 </html>

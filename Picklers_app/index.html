@@ -9,6 +9,9 @@
       href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"
     />
     <link rel="stylesheet" href="styles.css" />
+    <!-- jQuery and SweetAlert2 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       /* Custom styles */
       .tournament-card {
@@ -19,7 +22,8 @@
         display: none; /* Hidden by default, shown when a tournament is clicked */
       }
       /* Ensure the footer remains at the bottom when content is short */
-      html, body {
+      html,
+      body {
         height: 100%;
       }
       body {
@@ -29,6 +33,31 @@
       .main-content {
         flex: 1;
       }
+      /* Modal Tab Styles */
+      .tab-group {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #ddd;
+      }
+      .tab-group li {
+        flex: 1;
+        text-align: center;
+        padding: 10px 0;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .tab-group li.active {
+        border-bottom: 2px solid #3273dc;
+        color: #3273dc;
+      }
+      .tab-content > div {
+        display: none;
+      }
+      .tab-content > div.active {
+        display: block;
+      }
     </style>
   </head>
   <body>
@@ -36,8 +65,6 @@
     <nav class="navbar has-background-black">
       <div class="navbar-brand">
         <a class="navbar-item has-text-white" href="index.html">
-          <!-- Uncomment and replace with your logo if available -->
-          <!-- <img src="assets/logo.png" alt="Picklers Logo" class="image is-32x32"> -->
           <span class="ml-2 is-size-4">Picklers</span>
         </a>
         <div class="navbar-burger burger" data-target="navbarMenu">
@@ -53,26 +80,15 @@
           <a class="navbar-item has-text-white" href="pickler-pointer.html">Pickler Pointer</a>
           <a class="navbar-item has-text-white" href="profile.html">Profile</a>
         </div>
-      </div>
-      <div class="navbar-end">
-        <div class="navbar-item">
-          <figure class="image is-48x48">
-            <a class="has-text-white" href="profile.html">
-              <img
-                class="is-rounded"
-                src="https://via.placeholder.com/48"
-                alt="Profile Picture"
-                id="navbar-avatar"
-              />
-            </a>
-          </figure>
+        <div class="navbar-end" id="auth-container">
+          <!-- This container will be updated by JavaScript -->
         </div>
       </div>
     </nav>
 
     <!-- Main Content Section -->
     <div class="main-content">
-      <!-- Hero Section with Sign-In -->
+      <!-- Hero Section -->
       <section class="hero is-primary is-bold is-fullheight">
         <div class="hero-body">
           <div class="container has-text-centered">
@@ -80,28 +96,10 @@
             <h2 class="subtitle">
               Your go-to app for Pickleball tournaments, rankings, and social fun!
             </h2>
-            <!-- Authentication Section -->
-            <div id="auth-section">
-              <!-- Sign In Form -->
-              <div id="sign-in-form">
-                <input
-                  type="text"
-                  id="username-input"
-                  class="input is-medium"
-                  placeholder="Enter your username"
-                  style="max-width:300px; margin: 0 auto;"
-                />
-                <br /><br />
-                <button id="sign-in-btn" class="button is-link is-medium">Sign In</button>
-              </div>
-              <!-- Displayed when signed in -->
-              <div id="user-info" style="display:none;">
-                <p class="subtitle">Signed in as: <strong id="current-user"></strong></p>
-                <button id="logout-btn" class="button is-danger">Log Out</button>
-              </div>
-            </div>
-            <br>
-            <a href="#tournaments-section" class="button is-outlined is-light is-large">Get Started</a>
+            <br />
+            <a href="#tournaments-section" class="button is-outlined is-light is-large">
+              Get Started
+            </a>
           </div>
         </div>
       </section>
@@ -114,19 +112,19 @@
             Picklers is the ultimate app for Pickleball players! Join tournaments,
             track your rankings, and socialize with fellow players.
           </p>
-          <hr>
+          <hr />
           <!-- Create a Post Section -->
           <h3 class="title is-4">Create a Post</h3>
           <div id="post-form" class="box">
             <textarea id="post-content" class="textarea" placeholder="What's on your mind?"></textarea>
-            <br>
+            <br />
             <button id="post-btn" class="button is-primary">Post</button>
           </div>
           <!-- Posts Feed -->
           <div id="posts-feed">
             <h3 class="title is-4">Recent Posts</h3>
             <div id="posts-container">
-              <p>No posts yet.</p>
+              <p>Loading posts...</p>
             </div>
           </div>
         </div>
@@ -147,7 +145,6 @@
             Check out our latest tournaments and register to compete against the best!
           </p>
           <div class="columns is-multiline" id="tournaments-container">
-            <!-- Tournaments will be loaded dynamically (similar to tournament.html) -->
             <p>Loading tournaments...</p>
           </div>
           <!-- Inline Tournament Details (accordion-style) -->
@@ -163,7 +160,9 @@
             Find the best courts and partners near you! Explore locations and
             connect with fellow pickleball enthusiasts.
           </p>
-          <a href="pickler-pointer.html" class="button is-link">Explore Pickler Pointer</a>
+          <a href="pickler-pointer.html" class="button is-link">
+            Explore Pickler Pointer
+          </a>
         </div>
       </section>
 
@@ -172,7 +171,8 @@
         <div class="container">
           <h2 class="title is-3">Your Profile</h2>
           <p>
-            Manage your profile, track your progress, and view your past tournaments and rankings.
+            Manage your profile, track your progress, and view your past tournaments
+            and rankings.
           </p>
           <a href="profile.html" class="button is-warning">Go to Profile</a>
         </div>
@@ -186,147 +186,285 @@
       </div>
     </footer>
 
+    <!-- Authentication Modal -->
+    <div class="modal" id="auth-modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Sign In / Register</p>
+          <button class="delete" aria-label="close" id="auth-modal-close"></button>
+        </header>
+        <section class="modal-card-body">
+          <!-- Tab Group -->
+          <ul class="tab-group">
+            <li class="active" data-tab="signup">Sign Up</li>
+            <li data-tab="login">Log In</li>
+          </ul>
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <div id="signup" class="active">
+              <h1 class="title is-4">Sign Up</h1>
+              <form id="signup-form">
+                <div class="field">
+                  <label class="label">Username</label>
+                  <div class="control">
+                    <input type="text" id="signup_username" class="input" placeholder="Enter username" required />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Email</label>
+                  <div class="control">
+                    <input type="email" id="signup_email" class="input" placeholder="Enter email" required />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Password</label>
+                  <div class="control">
+                    <input type="password" id="signup_password" class="input" placeholder="Set a password" required />
+                  </div>
+                </div>
+                <button type="submit" class="button is-success is-fullwidth">Sign Up</button>
+              </form>
+            </div>
+            <div id="login">
+              <h1 class="title is-4">Log In</h1>
+              <form id="login-form">
+                <div class="field">
+                  <label class="label">Username</label>
+                  <div class="control">
+                    <input type="text" id="login_username" class="input" placeholder="Enter username" required />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Password</label>
+                  <div class="control">
+                    <input type="password" id="login_password" class="input" placeholder="Enter password" required />
+                  </div>
+                </div>
+                <button type="submit" class="button is-link is-fullwidth">Log In</button>
+              </form>
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button" id="auth-cancel">Cancel</button>
+        </footer>
+      </div>
+    </div>
+
     <script>
-      // Navbar burger toggle for mobile view
-      document.addEventListener("DOMContentLoaded", () => {
-        const burger = document.querySelector(".navbar-burger");
-        const menu = document.getElementById(burger.dataset.target);
-        burger.addEventListener("click", () => {
-          burger.classList.toggle("is-active");
-          menu.classList.toggle("is-active");
+      $(document).ready(function() {
+        // Navbar burger toggle for mobile view
+        $(".navbar-burger").click(function() {
+          $(".navbar-burger, .navbar-menu").toggleClass("is-active");
         });
 
-        // Sign-in functionality
-        const currentUser = localStorage.getItem("currentUser");
-        if (currentUser) {
-          document.getElementById("sign-in-form").style.display = "none";
-          document.getElementById("user-info").style.display = "block";
-          document.getElementById("current-user").textContent = currentUser;
+        // Update navbar auth display based on login state
+        function updateAuthNav() {
+          const currentUser = localStorage.getItem("currentUser");
+          if (currentUser) {
+            $("#auth-container").html(
+              '<span class="navbar-item has-text-white">Hello, ' +
+                currentUser +
+                '</span><button id="logout-nav" class="button is-danger">Log Out</button>'
+            );
+          } else {
+            $("#auth-container").html(
+              '<button id="open-auth-modal" class="button is-link">Sign In / Register</button>'
+            );
+          }
         }
 
-        document.getElementById("sign-in-btn").addEventListener("click", () => {
-          const username = document.getElementById("username-input").value.trim();
-          if (username) {
-            localStorage.setItem("currentUser", username);
-            document.getElementById("sign-in-form").style.display = "none";
-            document.getElementById("user-info").style.display = "block";
-            document.getElementById("current-user").textContent = username;
-          }
+        updateAuthNav();
+
+        // Open the authentication modal
+        $(document).on("click", "#open-auth-modal", function() {
+          $("#auth-modal").addClass("is-active");
         });
 
-        document.getElementById("logout-btn").addEventListener("click", () => {
-          localStorage.removeItem("currentUser");
-          document.getElementById("sign-in-form").style.display = "block";
-          document.getElementById("user-info").style.display = "none";
-          document.getElementById("current-user").textContent = "";
+        // Close the authentication modal
+        $("#auth-modal-close, #auth-cancel").click(function() {
+          $("#auth-modal").removeClass("is-active");
         });
 
-        // Post functionality
-        document.getElementById("post-btn").addEventListener("click", () => {
-          const postContent = document.getElementById("post-content").value.trim();
-          const currentUser = localStorage.getItem("currentUser");
-          if (!currentUser) {
-            alert("Please sign in to post.");
+        // Tab switching functionality
+        $(".tab-group li").click(function() {
+          $(".tab-group li").removeClass("active");
+          $(this).addClass("active");
+          const target = $(this).data("tab");
+          $(".tab-content > div").removeClass("active");
+          $("#" + target).addClass("active");
+        });
+
+        // Handle sign up form submission
+        $("#signup-form").submit(function(e) {
+          e.preventDefault();
+          const username = $("#signup_username").val().trim();
+          const email = $("#signup_email").val().trim();
+          const password = $("#signup_password").val().trim();
+          if (!username || !email || !password) {
+            Swal.fire("Error", "Please fill out all fields", "error");
             return;
           }
-          if (postContent) {
-            const post = {
-              user: currentUser,
-              content: postContent,
-              timestamp: new Date().toLocaleString()
-            };
-            addPostToFeed(post);
-            document.getElementById("post-content").value = "";
-          }
+          fetch("http://localhost:3000/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username,
+              email,
+              password,
+              summary: "",
+              home_court: "",
+              profile_picture: ""
+            })
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                Swal.fire("Registration Failed", data.error, "error");
+              } else {
+                Swal.fire("Success", "Registration successful! Please log in.", "success").then(() => {
+                  // Clear sign up fields and switch to login tab
+                  $("#signup_username, #signup_email, #signup_password").val("");
+                  $(".tab-group li").removeClass("active");
+                  $(".tab-group li[data-tab='login']").addClass("active");
+                  $(".tab-content > div").removeClass("active");
+                  $("#login").addClass("active");
+                });
+              }
+            })
+            .catch(err => {
+              console.error("Registration error:", err);
+              Swal.fire("Error", "Registration failed. Please try again.", "error");
+            });
         });
 
-        // Load posts from local storage if any
-        const storedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-        storedPosts.forEach(post => addPostToFeed(post, false));
+        // Handle login form submission
+        $("#login-form").submit(function(e) {
+          e.preventDefault();
+          const username = $("#login_username").val().trim();
+          const password = $("#login_password").val().trim();
+          if (!username || !password) {
+            Swal.fire("Error", "Please fill out all fields", "error");
+            return;
+          }
+          fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                Swal.fire("Login Failed", data.error, "error");
+              } else {
+                Swal.fire("Success", "Login successful!", "success").then(() => {
+                  localStorage.setItem("currentUser", data.username);
+                  localStorage.setItem("currentUserId", data.id);
+                  $("#auth-modal").removeClass("is-active");
+                  // Update navbar avatar (using first letter of username)
+                  $("#navbar-avatar").attr(
+                    "src",
+                    "https://via.placeholder.com/48?text=" + data.username.charAt(0).toUpperCase()
+                  );
+                  updateAuthNav();
+                });
+              }
+            })
+            .catch(err => {
+              console.error("Login error:", err);
+              Swal.fire("Error", "Login failed. Please try again.", "error");
+            });
+        });
 
-        // Load tournaments (simulate API call)
+        // Handle logout
+        $(document).on("click", "#logout-nav", function() {
+          localStorage.removeItem("currentUser");
+          localStorage.removeItem("currentUserId");
+          updateAuthNav();
+          Swal.fire("Logged Out", "You have been logged out.", "info");
+        });
+
+        // Load posts from API
+        loadPosts();
+
+        // Load tournaments from API
         loadTournaments();
       });
 
-      // Function to add a post to the feed and optionally save to local storage
+      // Function to add a post to the feed
       function addPostToFeed(post, save = true) {
         const postContainer = document.getElementById("posts-container");
         const postElement = document.createElement("div");
         postElement.classList.add("box");
         postElement.innerHTML = `
-          <p><strong>${post.user}</strong> <small>${post.timestamp}</small></p>
+          <p><strong>${post.username || post.user}</strong>
+          <small>${post.created_at || new Date().toLocaleString()}</small></p>
           <p>${post.content}</p>
         `;
-        // Prepend post
+        // Prepend the new post
         postContainer.insertBefore(postElement, postContainer.firstChild);
-        if (save) {
-          const storedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-          storedPosts.unshift(post);
-          localStorage.setItem("posts", JSON.stringify(storedPosts));
-        }
       }
 
-      // --- Tournament Section ---
-      let tournamentsData = [];
-      
-      function fetchTournaments() {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve([
-              {
-                title: "Spring Tournament",
-                subtitle: "March 2025",
-                description: "Compete in our annual spring event!",
-                details: "This tournament features top players from the region competing in a double-elimination format. The winner gets a trophy and a cash prize.",
-                registration: "Registration is open until February 28, 2025. Fee: $50."
-              },
-              {
-                title: "Summer Showdown",
-                subtitle: "June 2025",
-                description: "Get ready for a hot summer tournament!",
-                details: "The Summer Showdown is a fast-paced event with singles and doubles competitions. All skill levels welcome.",
-                registration: "Registration closes on May 31, 2025. Fee: $40."
-              },
-              {
-                title: "Fall Championships",
-                subtitle: "October 2025",
-                description: "Our grand finale tournament of the year!",
-                details: "Fall Championships brings together the best of the best in a knockout tournament. Expect intense competition and high stakes.",
-                registration: "Registration is now open. Fee: $60."
-              }
-            ]);
-          }, 1000);
-        });
+      // Function to load posts from the API
+      function loadPosts() {
+        fetch("http://localhost:3000/posts")
+          .then(response => response.json())
+          .then(posts => {
+            const postContainer = document.getElementById("posts-container");
+            postContainer.innerHTML = "";
+            if (posts.length === 0) {
+              postContainer.innerHTML = "<p>No posts yet.</p>";
+            } else {
+              posts.forEach(post => addPostToFeed(post, false));
+            }
+          })
+          .catch(error => {
+            console.error("Error loading posts:", error);
+            document.getElementById("posts-container").innerHTML =
+              "<p>Error loading posts.</p>";
+          });
       }
-      
+
+      // Tournament Section: load tournaments via API
+      let tournamentsData = [];
+      function fetchTournaments() {
+        return fetch("http://localhost:3000/tournaments").then(response => response.json());
+      }
+
       function loadTournaments() {
         const container = document.getElementById("tournaments-container");
         container.innerHTML = "<p>Loading tournaments...</p>";
-        fetchTournaments().then(data => {
-          tournamentsData = data;
-          container.innerHTML = "";
-          tournamentsData.forEach((tournament, index) => {
-            const column = document.createElement("div");
-            column.className = "column is-one-third";
-            const card = document.createElement("div");
-            card.className = "card tournament-card";
-            card.innerHTML = `
-              <div class="card-content">
-                <p class="title">${tournament.title}</p>
-                <p class="subtitle">${tournament.subtitle}</p>
-                <p>${tournament.description}</p>
-              </div>
-            `;
-            // Clicking the card shows tournament details inline below the tournaments section
-            card.addEventListener("click", () => {
-              showTournamentDetails(index);
+        fetchTournaments()
+          .then(data => {
+            tournamentsData = data;
+            container.innerHTML = "";
+            tournamentsData.forEach((tournament, index) => {
+              const column = document.createElement("div");
+              column.className = "column is-one-third";
+              const card = document.createElement("div");
+              card.className = "card tournament-card";
+              card.innerHTML = `
+                <div class="card-content">
+                  <p class="title">${tournament.title}</p>
+                  <p class="subtitle">${tournament.subtitle}</p>
+                  <p>${tournament.description}</p>
+                </div>
+              `;
+              // Clicking the card shows tournament details inline
+              card.addEventListener("click", () => {
+                showTournamentDetails(index);
+              });
+              column.appendChild(card);
+              container.appendChild(column);
             });
-            column.appendChild(card);
-            container.appendChild(column);
+          })
+          .catch(error => {
+            console.error("Error fetching tournaments:", error);
+            container.innerHTML = "<p>Error loading tournaments.</p>";
           });
-        });
       }
-      
+
       function showTournamentDetails(index) {
         const tournament = tournamentsData[index];
         const detailsContainer = document.getElementById("tournament-details-container");
