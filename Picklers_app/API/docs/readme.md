@@ -1,0 +1,1 @@
+This is just some boiler plate for the API structure so far. We still need to configure the database, get that connection going, and then build it out.
