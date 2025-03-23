@@ -4,11 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pickler Pointer</title>
+
+    <!-- Bulma CSS -->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+      href="http://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
     />
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- We can use fetch or axios; we'll use fetch for consistency -->
     <style>
       /* Basic styling for feed posts and friend cards */
       .feed-post {
@@ -20,6 +23,10 @@
         padding: 1rem;
         border-radius: 8px;
         margin-bottom: 1rem;
+      }
+      /* Keep the post modal centered */
+      .modal.is-active {
+        display: flex;
       }
     </style>
   </head>
@@ -39,7 +46,7 @@
       <div id="navbarMenu" class="navbar-menu has-background-black">
         <div class="navbar-start">
           <a class="navbar-item has-text-white" href="index.html">Home</a>
-          <a class="navbar-item has-text-white" href="tournament.html">Tournaments</a>
+          <!-- You mentioned we no longer use tournaments, but we'll keep the link if needed -->
           <a class="navbar-item has-text-white" href="pickler-pointer.html">Pickler Pointer</a>
           <a class="navbar-item has-text-white" href="profile.html">Profile</a>
           <a class="navbar-item has-text-white" href="reviewpage.html">Reviews</a>
@@ -64,6 +71,7 @@
     <section class="section">
       <div class="container">
         <h1 class="title">Pickler Pointer</h1>
+
         <div class="columns">
           <!-- Feed Column -->
           <div class="column is-6">
@@ -80,6 +88,7 @@
               <p>Loading posts...</p>
             </div>
           </div>
+
           <!-- Friends Column -->
           <div class="column is-6">
             <h2 class="subtitle">Find Pickler Friends</h2>
@@ -101,7 +110,10 @@
                     <p class="subtitle is-6">@markv</p>
                   </div>
                   <div class="media-right">
-                    <button class="button is-small is-primary follow-btn" data-username="markv">
+                    <button
+                      class="button is-small is-primary follow-btn"
+                      data-username="markv"
+                    >
                       Follow
                     </button>
                   </div>
@@ -124,7 +136,10 @@
                     <p class="subtitle is-6">@kaig</p>
                   </div>
                   <div class="media-right">
-                    <button class="button is-small is-primary follow-btn" data-username="kaig">
+                    <button
+                      class="button is-small is-primary follow-btn"
+                      data-username="kaig"
+                    >
                       Follow
                     </button>
                   </div>
@@ -147,7 +162,10 @@
                     <p class="subtitle is-6">@sisant</p>
                   </div>
                   <div class="media-right">
-                    <button class="button is-small is-primary follow-btn" data-username="sisant">
+                    <button
+                      class="button is-small is-primary follow-btn"
+                      data-username="sisant"
+                    >
                       Follow
                     </button>
                   </div>
@@ -170,7 +188,10 @@
                     <p class="subtitle is-6">@christianc</p>
                   </div>
                   <div class="media-right">
-                    <button class="button is-small is-primary follow-btn" data-username="christianc">
+                    <button
+                      class="button is-small is-primary follow-btn"
+                      data-username="christianc"
+                    >
                       Follow
                     </button>
                   </div>
@@ -193,7 +214,10 @@
                     <p class="subtitle is-6">@juanb</p>
                   </div>
                   <div class="media-right">
-                    <button class="button is-small is-primary follow-btn" data-username="juanb">
+                    <button
+                      class="button is-small is-primary follow-btn"
+                      data-username="juanb"
+                    >
                       Follow
                     </button>
                   </div>
@@ -236,7 +260,11 @@
           <button class="delete" aria-label="close" id="close-post-modal"></button>
         </header>
         <section class="modal-card-body">
-          <textarea id="modal-post-content" class="textarea" placeholder="What's on your mind?"></textarea>
+          <textarea
+            id="modal-post-content"
+            class="textarea"
+            placeholder="What's on your mind?"
+          ></textarea>
         </section>
         <footer class="modal-card-foot">
           <button class="button is-success" id="modal-post-btn">Post</button>
@@ -246,233 +274,200 @@
     </div>
 
     <script>
-      /* ==============================
-         Simulated API Calls
-      ============================== */
-      // Simulated API call for feed posts
-      function fetchFeedPosts() {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve([
-              {
-                name: "Mark V",
-                post: "Had an awesome match at Schenley Park today!",
-                timestamp: "1 hour ago"
-              },
-              {
-                name: "Kai G",
-                post: "Looking for a doubles partner for tomorrow's game!",
-                timestamp: "3 hours ago"
-              },
-              {
-                name: "Sisan T",
-                post: "Just won my match against a tough opponent at North Shore Courts!",
-                timestamp: "5 hours ago"
-              },
-              {
-                name: "Christian C",
-                post: "Anyone up for practice at Riverview Park later?",
-                timestamp: "8 hours ago"
-              },
-              {
-                name: "Juan B",
-                post: "Loving the vibe at the new courts downtown!",
-                timestamp: "1 day ago"
-              }
-            ]);
-          }, 1000);
-        });
-      }
+      const BASE_URL = "http://localhost:3000";
 
-      // Simulated API call for nearby courts (with name and address)
-      function fetchCourts() {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve([
-              {
-                name: "Schenley Park Pickleball Courts",
-                address: "123 Schenley Ave, Pittsburgh, PA 15213"
-              },
-              {
-                name: "North Shore Courts",
-                address: "456 North Shore Dr, Pittsburgh, PA 15212"
-              },
-              {
-                name: "Riverview Park Courts",
-                address: "789 Riverview Rd, Pittsburgh, PA 15220"
-              },
-              {
-                name: "Southside Pickleball Center",
-                address: "101 Southside St, Pittsburgh, PA 15203"
-              },
-              {
-                name: "Duquesne University Courts",
-                address: "202 Duquesne Blvd, Pittsburgh, PA 15282"
-              }
-            ]);
-          }, 1000);
-        });
-      }
-
-      // Simulated API call for following a friend
-      function followFriend(username) {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve({ success: true, username: username });
-          }, 500);
-        });
-      }
-
-      /* ==============================
-         DOM Update Functions
-      ============================== */
-      // Load feed posts and update the DOM
-      function loadFeedPosts() {
-        fetchFeedPosts()
-          .then((posts) => {
-            const feedHTML = posts
-              .map(
-                (post) => `
-                  <div class="feed-post">
-                    <p><strong>${post.name}</strong> posted: ${post.post}</p>
-                    <small>${post.timestamp}</small>
-                  </div>
-                `
-              )
-              .join("");
-            document.getElementById("feed").innerHTML = feedHTML;
-          })
-          .catch(() => {
-            document.getElementById("feed").innerHTML =
-              "<p>Error loading posts.</p>";
-          });
-      }
-
-      // Load courts and update the DOM in a table
-      function loadCourts() {
-        fetchCourts()
-          .then((courts) => {
-            const courtsHTML = courts
-              .map(
-                (court) => `
-                  <tr>
-                    <td>${court.name}</td>
-                    <td>${court.address}</td>
-                  </tr>
-                `
-              )
-              .join("");
-            document.getElementById("courts-list").innerHTML = courtsHTML;
-          })
-          .catch(() => {
-            document.getElementById("courts-list").innerHTML =
-              "<tr><td colspan='2'>Error loading courts.</td></tr>";
-          });
-      }
-
-      // Set up follow button event listeners
-      function setupFollowButtons() {
-        const buttons = document.querySelectorAll(".follow-btn");
-        buttons.forEach((button) => {
-          button.addEventListener("click", toggleFollow);
-        });
-      }
-
-      // Toggle follow button state with a simulated API call
-      function toggleFollow(event) {
-        const button = event.currentTarget;
-        const username = button.getAttribute("data-username");
-        button.disabled = true; // disable while processing
-        followFriend(username)
-          .then((response) => {
-            if (response.success) {
-              // Toggle button text and styling
-              if (button.textContent.trim() === "Follow") {
-                button.textContent = "Following";
-                button.classList.remove("is-primary");
-                button.classList.add("is-success");
-              } else {
-                button.textContent = "Follow";
-                button.classList.remove("is-success");
-                button.classList.add("is-primary");
-              }
-            }
-            button.disabled = false;
-          })
-          .catch(() => {
-            console.error("Error following friend");
-            button.disabled = false;
-          });
-      }
-
-      /* ==============================
-         Post Creation and Feed Functions
-      ============================== */
-      // Function to add a post to the feed and optionally save it to local storage
-      function addPostToFeed(post, save = true) {
-        const feedContainer = document.getElementById("feed");
-        const postElement = document.createElement("div");
-        postElement.classList.add("feed-post");
-        postElement.innerHTML = `
-          <p><strong>${post.user}</strong> posted: ${post.content}</p>
-          <small>${post.timestamp}</small>
-        `;
-        // Prepend the post so that the newest posts appear at the top
-        feedContainer.insertBefore(postElement, feedContainer.firstChild);
-        if (save) {
-          const storedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-          storedPosts.unshift(post);
-          localStorage.setItem("posts", JSON.stringify(storedPosts));
-        }
-      }
-
-      // Load existing posts from local storage and display them
-      function loadPosts() {
-        const storedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-        const feedContainer = document.getElementById("feed");
-        feedContainer.innerHTML = "";
-        if (storedPosts.length === 0) {
-          feedContainer.innerHTML = "<p>No posts yet.</p>";
-        } else {
-          storedPosts.forEach((post) => addPostToFeed(post, false));
-        }
-      }
-
-      /* ==============================
-         Modal and Authentication Handlers
-      ============================== */
       document.addEventListener("DOMContentLoaded", () => {
-        // Navbar burger toggle for mobile devices
+        // If user is not logged in, redirect to index.html
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
+          window.location.href = "index.html";
+          return;
+        }
+
+        // Navbar burger toggle
         const burger = document.querySelector(".burger");
         const menu = document.getElementById(burger.dataset.target);
         burger.addEventListener("click", () => {
           burger.classList.toggle("is-active");
           menu.classList.toggle("is-active");
         });
-        loadFeedPosts();
-        loadCourts();
+
+        // Load feed (real posts from /posts)
+        loadRealPosts();
+        // Load courts from /courts
+        loadRealCourts();
+        // Setup follow buttons
         setupFollowButtons();
 
-        // Modal open and close handlers
+        // Setup post modal handlers
         document.getElementById("open-post-modal").addEventListener("click", openPostModal);
         document.getElementById("cancel-post-btn").addEventListener("click", closePostModal);
         document.getElementById("close-post-modal").addEventListener("click", closePostModal);
-        document.getElementById("modal-post-btn").addEventListener("click", () => {
-          const postContent = document.getElementById("modal-post-content").value.trim();
-          const currentUser = localStorage.getItem("currentUser") || "Anonymous";
-          if (postContent) {
-            const post = {
-              user: currentUser,
-              content: postContent,
-              timestamp: new Date().toLocaleString()
-            };
-            addPostToFeed(post);
-            document.getElementById("modal-post-content").value = "";
-            closePostModal();
-          }
-        });
+        document.getElementById("modal-post-btn").addEventListener("click", createPost);
       });
 
+      // -----------------------------
+      // Load real posts from GET /posts
+      // -----------------------------
+      function loadRealPosts() {
+        const feed = document.getElementById("feed");
+        feed.innerHTML = "<p>Loading posts...</p>";
+        fetch(`${BASE_URL}/posts`)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch posts");
+            return res.json();
+          })
+          .then(posts => {
+            if (!Array.isArray(posts) || posts.length === 0) {
+              feed.innerHTML = "<p>No posts yet.</p>";
+              return;
+            }
+            feed.innerHTML = posts.map(post => {
+              const dateStr = new Date(post.created_at).toLocaleString();
+              return `
+                <div class="feed-post">
+                  <p><strong>${post.username}</strong> posted: ${post.content}</p>
+                  <small>${dateStr}</small>
+                </div>
+              `;
+            }).join("");
+          })
+          .catch(err => {
+            feed.innerHTML = `<p>Error loading posts: ${err.message}</p>`;
+          });
+      }
+
+      // -----------------------------
+      // Create a new post (POST /posts)
+      // -----------------------------
+      function createPost() {
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
+          alert("You must be logged in to post.");
+          return;
+        }
+        const userObj = JSON.parse(storedUser);
+        const content = document.getElementById("modal-post-content").value.trim();
+        if (!content) {
+          alert("Please enter some content for your post.");
+          return;
+        }
+        const payload = {
+          user_id: userObj.id,
+          content
+        };
+        fetch(`${BASE_URL}/posts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to create post");
+            return res.json();
+          })
+          .then(newPost => {
+            closePostModal();
+            // Reload posts
+            loadRealPosts();
+          })
+          .catch(err => {
+            alert(`Error: ${err.message}`);
+          });
+      }
+
+      // -----------------------------
+      // Load real courts from GET /courts
+      // -----------------------------
+      function loadRealCourts() {
+        const courtsList = document.getElementById("courts-list");
+        courtsList.innerHTML = "<tr><td colspan='2'>Loading courts...</td></tr>";
+        fetch(`${BASE_URL}/courts`)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch courts");
+            return res.json();
+          })
+          .then(courts => {
+            if (!Array.isArray(courts) || courts.length === 0) {
+              courtsList.innerHTML = "<tr><td colspan='2'>No courts found.</td></tr>";
+              return;
+            }
+            courtsList.innerHTML = courts.map(court => `
+              <tr>
+                <td>${court.name}</td>
+                <td>${court.address}</td>
+              </tr>
+            `).join("");
+          })
+          .catch(err => {
+            courtsList.innerHTML = `<tr><td colspan='2'>Error: ${err.message}</td></tr>`;
+          });
+      }
+
+      // -----------------------------
+      // Follow logic
+      // 1) Look up friend by username => GET /users?username=...
+      // 2) POST /follows with { follower_id, followee_id }
+      // -----------------------------
+      function setupFollowButtons() {
+        document.querySelectorAll(".follow-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            followFriend(btn.getAttribute("data-username"), btn);
+          });
+        });
+      }
+
+      function followFriend(friendUsername, button) {
+        button.disabled = true;
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
+          alert("You must be logged in to follow someone.");
+          button.disabled = false;
+          return;
+        }
+        const currentUser = JSON.parse(storedUser);
+
+        // 1) Find friend user_id by username
+        fetch(`${BASE_URL}/users?username=${friendUsername}`)
+          .then(res => {
+            if (!res.ok) throw new Error("User not found");
+            return res.json();
+          })
+          .then(friend => {
+            // friend should contain { id, username, ... }
+            const friendId = friend.id;
+            // 2) POST /follows
+            return fetch(`${BASE_URL}/follows`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                follower_id: currentUser.id,
+                followee_id: friendId
+              })
+            });
+          })
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to follow user");
+            // Toggle button text
+            if (button.textContent.trim() === "Follow") {
+              button.textContent = "Following";
+              button.classList.remove("is-primary");
+              button.classList.add("is-success");
+            } else {
+              button.textContent = "Follow";
+              button.classList.remove("is-success");
+              button.classList.add("is-primary");
+            }
+            button.disabled = false;
+          })
+          .catch(err => {
+            alert(`Error: ${err.message}`);
+            button.disabled = false;
+          });
+      }
+
+      // -----------------------------
+      // Modal open/close
+      // -----------------------------
       function openPostModal() {
         document.getElementById("post-modal").classList.add("is-active");
       }

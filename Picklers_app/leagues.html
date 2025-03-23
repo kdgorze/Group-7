@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leagues - Picklers App</title>
+
+    <!-- Bulma CSS over HTTP -->
+    <link
+      rel="stylesheet"
+      href="http://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"
+    />
+
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .main-content {
+        flex: 1;
+      }
+      .table th,
+      .table td {
+        text-align: center;
+      }
+      .hidden {
+        display: none;
+      }
+      /* Additional spacing for match record forms */
+      .match-section {
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar has-background-black">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-white" href="index.html">
+          <span class="ml-2 is-size-4">Picklers: League Ladder</span>
+        </a>
+        <div class="navbar-burger burger" data-target="navbarMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+      <div id="navbarMenu" class="navbar-menu has-background-black">
+        <div class="navbar-start">
+          <a class="navbar-item has-text-white" href="index.html">Home</a>
+          <a class="navbar-item has-text-white" href="leagues.html">Leagues</a>
+          <a class="navbar-item has-text-white" href="pickler-pointer.html">Pickler Pointer</a>
+          <a class="navbar-item has-text-white" href="profile.html">Profile</a>
+          <a class="navbar-item has-text-white" href="reviewpage.html">Reviews</a>
+        </div>
+      </div>
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <figure class="image is-48x48">
+            <a class="has-text-white" href="profile.html">
+              <img class="is-rounded" src="http://via.placeholder.com/48" alt="Profile Picture" />
+            </a>
+          </figure>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <!-- Leagues Section -->
+      <section class="section">
+        <div class="container">
+          <h1 class="title">Leagues</h1>
+          <!-- CREATE LEAGUE FORM (Popup via SweetAlert2) -->
+          <div class="box">
+            <button class="button is-primary" id="create-league-btn">Create New League</button>
+          </div>
+
+          <!-- LEAGUES LIST -->
+          <div class="box">
+            <h2 class="subtitle">Existing Leagues</h2>
+            <table class="table is-fullwidth is-hoverable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="leagues-table-body">
+                <tr>
+                  <td colspan="4">Loading leagues...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SELECTED LEAGUE SECTION -->
+      <section class="section hidden" id="selected-league-section">
+        <div class="container">
+          <h1 class="title" id="selected-league-title">League: (none)</h1>
+
+          <!-- ADD PARTICIPANT -->
+          <div class="box">
+            <h2 class="subtitle">Add Participant</h2>
+            <div class="field">
+              <label class="label">Username</label>
+              <div class="control">
+                <input class="input" type="text" id="participant-username" placeholder="Username" />
+              </div>
+            </div>
+            <button class="button is-link" id="add-participant-btn">Add Participant</button>
+          </div>
+
+          <!-- RECORD MATCH SECTION -->
+          <div class="box">
+            <h2 class="subtitle">Record a Match</h2>
+            <!-- Toggle Button -->
+            <button class="button is-info" id="toggle-match-type-btn">Switch to Doubles</button>
+
+            <!-- Singles Match Form (default) -->
+            <div id="singles-match-form" class="match-section">
+              <div class="field">
+                <label class="label">Player 1</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select id="singles-player1-select">
+                      <option value="">Select Player 1</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Player 2</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select id="singles-player2-select">
+                      <option value="">Select Player 2</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column">
+                  <label class="label">Player 1 Score</label>
+                  <input class="input" type="number" id="singles-player1-score" />
+                </div>
+                <div class="column">
+                  <label class="label">Player 2 Score</label>
+                  <input class="input" type="number" id="singles-player2-score" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Doubles Match Form (hidden by default) -->
+            <div id="doubles-match-form" class="match-section hidden">
+              <div class="field">
+                <label class="label">Team 1</label>
+                <div class="columns">
+                  <div class="column">
+                    <div class="control">
+                      <div class="select is-fullwidth">
+                        <select id="doubles-player1-select">
+                          <option value="">Select Player 1</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="control">
+                      <div class="select is-fullwidth">
+                        <select id="doubles-player2-select">
+                          <option value="">Select Player 2</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label">Team 2</label>
+                <div class="columns">
+                  <div class="column">
+                    <div class="control">
+                      <div class="select is-fullwidth">
+                        <select id="doubles-player3-select">
+                          <option value="">Select Player 3</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="control">
+                      <div class="select is-fullwidth">
+                        <select id="doubles-player4-select">
+                          <option value="">Select Player 4</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column">
+                  <label class="label">Team 1 Score</label>
+                  <input class="input" type="number" id="doubles-team1-score" />
+                </div>
+                <div class="column">
+                  <label class="label">Team 2 Score</label>
+                  <input class="input" type="number" id="doubles-team2-score" />
+                </div>
+              </div>
+            </div>
+
+            <button class="button is-info" id="record-match-btn">Record Match</button>
+          </div>
+
+          <!-- LADDER TABLE -->
+          <div class="box">
+            <h2 class="subtitle">Ladder</h2>
+            <button class="button is-success mb-2" id="refresh-ladder-btn">Refresh Ladder</button>
+            <table class="table is-fullwidth is-striped">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Username</th>
+                  <th>Rating</th>
+                  <th>Matches</th>
+                  <th>Wins</th>
+                  <th>Losses</th>
+                  <th>Last Match</th>
+                </tr>
+              </thead>
+              <tbody id="ladder-body">
+                <tr><td colspan="7">No data.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- MATCH HISTORY -->
+          <div class="box">
+            <h2 class="subtitle">Match History</h2>
+            <button class="button is-warning mb-2" id="refresh-matches-btn">Refresh Matches</button>
+            <table class="table is-fullwidth is-hoverable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Team 1 / Player 1</th>
+                  <th>Score</th>
+                  <th>Team 2 / Player 2</th>
+                  <th>Score</th>
+                  <th>Winner</th>
+                  <th>Played At</th>
+                </tr>
+              </thead>
+              <tbody id="matches-body">
+                <tr><td colspan="7">No data.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer has-background-primary has-text-white">
+      <div class="content has-text-centered">
+        <p>&copy; 2025 Picklers App | League Ladder</p>
+      </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="http://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="http://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      const BASE_URL = "http://localhost:3000";
+      let isDoubles = false;
+
+      // Navbar burger toggle
+      document.addEventListener("DOMContentLoaded", () => {
+        const burger = document.querySelector(".burger");
+        if (burger) {
+          const menu = document.getElementById(burger.dataset.target);
+          burger.addEventListener("click", () => {
+            burger.classList.toggle("is-active");
+            menu.classList.toggle("is-active");
+          });
+        }
+        loadLeagues();
+      });
+
+      // -----------------------------
+      // LOAD LEAGUES
+      // -----------------------------
+      function loadLeagues() {
+        const tbody = document.getElementById("leagues-table-body");
+        tbody.innerHTML = `<tr><td colspan="4">Loading leagues...</td></tr>`;
+        fetch(`${BASE_URL}/leagues`)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch leagues");
+            return res.json();
+          })
+          .then(data => {
+            if (data.length === 0) {
+              tbody.innerHTML = `<tr><td colspan="4">No leagues found.</td></tr>`;
+              return;
+            }
+            tbody.innerHTML = data.map(league => `
+              <tr>
+                <td>${league.id}</td>
+                <td>${league.name}</td>
+                <td>${league.description || ""}</td>
+                <td>
+                  <button class="button is-small is-primary" onclick="selectLeague(${league.id}, '${league.name}')">
+                    Select
+                  </button>
+                </td>
+              </tr>
+            `).join("");
+          })
+          .catch(err => {
+            console.error("Error loading leagues:", err);
+            tbody.innerHTML = `<tr><td colspan="4">Error loading leagues.</td></tr>`;
+          });
+      }
+
+      // -----------------------------
+      // CREATE LEAGUE (SweetAlert2 Popup)
+      // -----------------------------
+      document.getElementById("create-league-btn").addEventListener("click", () => {
+        Swal.fire({
+          title: 'Create New League',
+          html: `
+            <input id="swal-league-name" class="swal2-input" placeholder="League Name">
+            <textarea id="swal-league-desc" class="swal2-textarea" placeholder="Description"></textarea>
+          `,
+          focusConfirm: false,
+          showCancelButton: true,
+          preConfirm: () => {
+            const name = document.getElementById('swal-league-name').value.trim();
+            const desc = document.getElementById('swal-league-desc').value.trim();
+            if (!name) {
+              Swal.showValidationMessage('League name is required');
+            }
+            return { name, desc };
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const payload = {
+              name: result.value.name,
+              description: result.value.desc,
+              created_by: 1 // Hard-coded for demo
+            };
+            fetch(`${BASE_URL}/leagues`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            })
+              .then(res => {
+                if (!res.ok) throw new Error("Failed to create league");
+                return res.json();
+              })
+              .then(newLeague => {
+                Swal.fire("League Created", `League '${newLeague.name}' created!`, "success");
+                loadLeagues();
+              })
+              .catch(err => {
+                console.error("Error creating league:", err);
+                Swal.fire("Error", "Error creating league: " + err.message, "error");
+              });
+          }
+        });
+      });
+
+      // -----------------------------
+      // SELECT LEAGUE
+      // -----------------------------
+      let currentLeagueId = null;
+      function selectLeague(id, name) {
+        currentLeagueId = id;
+        document.getElementById("selected-league-section").classList.remove("hidden");
+        document.getElementById("selected-league-title").textContent = `League: ${name} (#${id})`;
+        document.getElementById("ladder-body").innerHTML = `<tr><td colspan="7">No data.</td></tr>`;
+        document.getElementById("matches-body").innerHTML = `<tr><td colspan="7">No data.</td></tr>`;
+        loadMatchParticipants();
+      }
+
+      // -----------------------------
+      // LOAD PARTICIPANTS FOR MATCH DROPDOWNS
+      // -----------------------------
+      function loadMatchParticipants() {
+        if (!currentLeagueId) return;
+        fetch(`${BASE_URL}/leagues/${currentLeagueId}/participants`)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch participants");
+            return res.json();
+          })
+          .then(data => {
+            // For singles dropdowns
+            const singlesSelect1 = document.getElementById("singles-player1-select");
+            const singlesSelect2 = document.getElementById("singles-player2-select");
+            // For doubles dropdowns
+            const doublesSelect1 = document.getElementById("doubles-player1-select");
+            const doublesSelect2 = document.getElementById("doubles-player2-select");
+            const doublesSelect3 = document.getElementById("doubles-player3-select");
+            const doublesSelect4 = document.getElementById("doubles-player4-select");
+            
+            [singlesSelect1, singlesSelect2, doublesSelect1, doublesSelect2, doublesSelect3, doublesSelect4].forEach(select => {
+              select.innerHTML = '<option value="">Select Player</option>';
+            });
+            data.forEach(participant => {
+              const option = `<option value="${participant.username}">${participant.username}</option>`;
+              [singlesSelect1, singlesSelect2, doublesSelect1, doublesSelect2, doublesSelect3, doublesSelect4].forEach(select => {
+                select.innerHTML += option;
+              });
+            });
+          })
+          .catch(err => {
+            console.error("Error loading participants for match:", err);
+          });
+      }
+
+      // -----------------------------
+      // TOGGLE MATCH TYPE
+      // -----------------------------
+      document.getElementById("toggle-match-type-btn").addEventListener("click", () => {
+        isDoubles = !isDoubles;
+        if (isDoubles) {
+          document.getElementById("singles-match-form").classList.add("hidden");
+          document.getElementById("doubles-match-form").classList.remove("hidden");
+          document.getElementById("toggle-match-type-btn").textContent = "Switch to Singles";
+        } else {
+          document.getElementById("doubles-match-form").classList.add("hidden");
+          document.getElementById("singles-match-form").classList.remove("hidden");
+          document.getElementById("toggle-match-type-btn").textContent = "Switch to Doubles";
+        }
+      });
+
+      // -----------------------------
+      // RECORD MATCH
+      // -----------------------------
+      document.getElementById("record-match-btn").addEventListener("click", () => {
+        if (!currentLeagueId) {
+          Swal.fire("Error", "No league selected", "error");
+          return;
+        }
+        let payload = {};
+        if (isDoubles) {
+          const player1_username = document.getElementById("doubles-player1-select").value;
+          const player2_username = document.getElementById("doubles-player2-select").value;
+          const player3_username = document.getElementById("doubles-player3-select").value;
+          const player4_username = document.getElementById("doubles-player4-select").value;
+          const team1_score = parseInt(document.getElementById("doubles-team1-score").value.trim() || "0", 10);
+          const team2_score = parseInt(document.getElementById("doubles-team2-score").value.trim() || "0", 10);
+          
+          if (!player1_username || !player2_username || !player3_username || !player4_username) {
+            Swal.fire("Error", "Please select all players for doubles match", "error");
+            return;
+          }
+          payload = {
+            match_type: "doubles",
+            player1_username,
+            player2_username,
+            player3_username,
+            player4_username,
+            team1_score,
+            team2_score
+          };
+        } else {
+          const player1_username = document.getElementById("singles-player1-select").value;
+          const player2_username = document.getElementById("singles-player2-select").value;
+          const p1Score = parseInt(document.getElementById("singles-player1-score").value.trim() || "0", 10);
+          const p2Score = parseInt(document.getElementById("singles-player2-score").value.trim() || "0", 10);
+          if (!player1_username || !player2_username) {
+            Swal.fire("Error", "Please select both players", "error");
+            return;
+          }
+          payload = {
+            match_type: "singles",
+            player1_username,
+            player2_username,
+            player1_score: p1Score,
+            player2_score: p2Score
+          };
+        }
+        fetch(`${BASE_URL}/leagues/${currentLeagueId}/matches`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to record match");
+            return res.json();
+          })
+          .then(newMatch => {
+            Swal.fire("Success", `Match #${newMatch.id} recorded!`, "success");
+            // Clear score fields
+            if (isDoubles) {
+              document.getElementById("doubles-team1-score").value = "";
+              document.getElementById("doubles-team2-score").value = "";
+            } else {
+              document.getElementById("singles-player1-score").value = "";
+              document.getElementById("singles-player2-score").value = "";
+            }
+          })
+          .catch(err => {
+            console.error("Error recording match:", err);
+            Swal.fire("Error", "Error recording match: " + err.message, "error");
+          });
+      });
+
+      // -----------------------------
+      // REFRESH LADDER
+      // -----------------------------
+      document.getElementById("refresh-ladder-btn").addEventListener("click", () => {
+        if (!currentLeagueId) {
+          Swal.fire("Error", "No league selected", "error");
+          return;
+        }
+        const ladderBody = document.getElementById("ladder-body");
+        ladderBody.innerHTML = `<tr><td colspan="7">Loading...</td></tr>`;
+        fetch(`${BASE_URL}/leagues/${currentLeagueId}/ladder`)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch ladder");
+            return res.json();
+          })
+          .then(data => {
+            if (data.length === 0) {
+              ladderBody.innerHTML = `<tr><td colspan="7">No participants in this league.</td></tr>`;
+              return;
+            }
+            ladderBody.innerHTML = data.map(row => `
+              <tr>
+                <td>${row.rank}</td>
+                <td>${row.username}</td>
+                <td>${row.rating}</td>
+                <td>${row.matches_played}</td>
+                <td>${row.wins}</td>
+                <td>${row.losses}</td>
+                <td>${row.last_match ? new Date(row.last_match).toLocaleDateString() : "N/A"}</td>
+              </tr>
+            `).join("");
+          })
+          .catch(err => {
+            console.error("Error fetching ladder:", err);
+            ladderBody.innerHTML = `<tr><td colspan="7">Error loading ladder.</td></tr>`;
+          });
+      });
+
+      // -----------------------------
+      // REFRESH MATCHES
+      // -----------------------------
+      document.getElementById("refresh-matches-btn").addEventListener("click", () => {
+        if (!currentLeagueId) {
+          Swal.fire("Error", "No league selected", "error");
+          return;
+        }
+        const matchesBody = document.getElementById("matches-body");
+        matchesBody.innerHTML = `<tr><td colspan="7">Loading...</td></tr>`;
+        fetch(`${BASE_URL}/leagues/${currentLeagueId}/matches`)
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to fetch matches");
+            return res.json();
+          })
+          .then(data => {
+            if (data.length === 0) {
+              matchesBody.innerHTML = `<tr><td colspan="7">No matches recorded yet.</td></tr>`;
+              return;
+            }
+            matchesBody.innerHTML = data.map(m => {
+              let winnerName = "";
+              let team1Display = "";
+              let team2Display = "";
+              let score1Display = "";
+              let score2Display = "";
+              if (m.match_type === "doubles") {
+                team1Display = `${m.player1_name || ""}${m.player3_name ? ", " + m.player3_name : ""}`;
+                team2Display = `${m.player2_name || ""}${m.player4_name ? ", " + m.player4_name : ""}`;
+                score1Display = m.team1_score;
+                score2Display = m.team2_score;
+                if (m.winner_team === "team1") {
+                  winnerName = team1Display;
+                } else if (m.winner_team === "team2") {
+                  winnerName = team2Display;
+                } else {
+                  winnerName = "Tie/Unknown";
+                }
+              } else {
+                team1Display = m.player1_name;
+                team2Display = m.player2_name;
+                score1Display = m.player1_score;
+                score2Display = m.player2_score;
+                if (m.winner_id === m.player1_id) {
+                  winnerName = m.player1_name;
+                } else if (m.winner_id === m.player2_id) {
+                  winnerName = m.player2_name;
+                } else {
+                  winnerName = "Tie/Unknown";
+                }
+              }
+              const playedAtFormatted = m.played_at ? new Date(m.played_at).toLocaleDateString() : "N/A";
+              return `
+                <tr>
+                  <td>${m.id}</td>
+                  <td>${team1Display}</td>
+                  <td>${score1Display}</td>
+                  <td>${team2Display}</td>
+                  <td>${score2Display}</td>
+                  <td>${winnerName}</td>
+                  <td>${playedAtFormatted}</td>
+                </tr>
+              `;
+            }).join("");
+          })
+          .catch(err => {
+            console.error("Error fetching matches:", err);
+            matchesBody.innerHTML = `<tr><td colspan="7">Error loading matches.</td></tr>`;
+          });
+      });
+    </script>
+  </body>
+</html>
