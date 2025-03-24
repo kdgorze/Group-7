@@ -39,16 +39,22 @@ app.get("/", (req, res) => {
             <li><strong>GET /posts</strong> - Get all posts</li>
             <li><strong>POST /posts</strong> - Create a new post</li>
             <li><strong>POST /follows</strong> - Follow a user</li>
+            <li><strong>DELETE /follows</strong> - Unfollow a user</li>
             <li><strong>GET /users/:id/following</strong> - Get users a user is following</li>
             <li><strong>GET /users/:id/followers</strong> - Get a user's followers</li>
             <li><strong>GET /courts</strong> - Get all courts</li>
+            <hr />
+            <li><strong>GET /users</strong> - Get users (by username query or all)</li>
+            <li><strong>GET /users/:id</strong> - Get single user (for profile data)</li>
+            <li><strong>GET /users/:id/matches</strong> - Get user's recent matches</li>
+            <li><strong>GET /users/:id/friends</strong> - Get user's friends</li>
             <hr />
             <li><strong>POST /leagues</strong> - Create a new league</li>
             <li><strong>GET /leagues</strong> - Get all leagues</li>
             <li><strong>GET /leagues/:id</strong> - Get a single league</li>
             <li><strong>POST /leagues/:id/participants</strong> - Add a participant (by username)</li>
             <li><strong>GET /leagues/:id/participants</strong> - Get league participants</li>
-            <li><strong>POST /leagues/:id/matches</strong> - Record a match (singles or doubles)</li>
+            <li><strong>POST /leagues/:id/matches</strong> - Record a match (singles/doubles)</li>
             <li><strong>GET /leagues/:id/matches</strong> - Get matches in a league</li>
             <li><strong>GET /leagues/:id/ladder</strong> - Get league ladder (ranking)</li>
           </ul>
@@ -64,10 +70,10 @@ app.get("/", (req, res) => {
 // User Endpoints: Register & Login
 // =================================================
 
-// Register a new user
 app.post("/register", async (req, res) => {
   try {
-    const { username, email, password, summary, home_court, profile_picture } = req.body;
+    const { username, email, password, summary, home_court, profile_picture } =
+      req.body;
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(password, saltRounds);
     const result = await db.query(
@@ -85,11 +91,12 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// User login
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const result = await db.query("SELECT * FROM users WHERE username = $1", [username]);
+    const result = await db.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -110,7 +117,6 @@ app.post("/login", async (req, res) => {
 // Post Endpoints (Social Posts)
 // =================================================
 
-// Get all posts
 app.get("/posts", async (req, res) => {
   try {
     const result = await db.query(
@@ -126,7 +132,6 @@ app.get("/posts", async (req, res) => {
   }
 });
 
-// Create a new post
 app.post("/posts", async (req, res) => {
   try {
     const { user_id, content } = req.body;
@@ -145,7 +150,6 @@ app.post("/posts", async (req, res) => {
 // Follow Endpoints (Social Feature)
 // =================================================
 
-// Follow a user
 app.post("/follows", async (req, res) => {
   try {
     const { follower_id, followee_id } = req.body;
@@ -160,7 +164,24 @@ app.post("/follows", async (req, res) => {
   }
 });
 
-// Get list of users that a user is following
+// DELETE endpoint for unfollowing
+app.delete("/follows", async (req, res) => {
+  try {
+    const { follower_id, followee_id } = req.body;
+    const result = await db.query(
+      "DELETE FROM follows WHERE follower_id = $1 AND followee_id = $2 RETURNING *",
+      [follower_id, followee_id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Follow relationship not found" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error in DELETE /follows:", err);
+    res.status(500).json({ error: "Failed to unfollow user" });
+  }
+});
+
 app.get("/users/:id/following", async (req, res) => {
   try {
     const user_id = req.params.id;
@@ -178,7 +199,6 @@ app.get("/users/:id/following", async (req, res) => {
   }
 });
 
-// Get list of followers for a user
 app.get("/users/:id/followers", async (req, res) => {
   try {
     const user_id = req.params.id;
@@ -197,12 +217,97 @@ app.get("/users/:id/followers", async (req, res) => {
 });
 
 // =================================================
-// Courts Endpoints (Example: local courts info)
+// Additional User Endpoints for Profile
+// =================================================
+
+app.get("/users", async (req, res) => {
+  try {
+    const { username } = req.query;
+    if (username) {
+      const result = await db.query(
+        "SELECT id, username, email, summary, home_court, profile_picture FROM users WHERE username = $1",
+        [username]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      return res.json(result.rows[0]);
+    } else {
+      const allUsers = await db.query(
+        "SELECT id, username, email, summary, home_court, profile_picture FROM users"
+      );
+      return res.json(allUsers.rows);
+    }
+  } catch (err) {
+    console.error("Error in GET /users:", err);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+app.get("/users/:id", async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const result = await db.query(
+      `SELECT id, username, summary, home_court
+         FROM users
+        WHERE id = $1`,
+      [userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error in GET /users/:id:", err);
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
+
+app.get("/users/:id/matches", async (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  try {
+    const result = await db.query(
+      `SELECT lm.result, lm.created_at AS played_at
+         FROM league_matches lm
+        WHERE $1 IN (lm.player1_id, lm.player2_id, lm.player3_id, lm.player4_id)
+        ORDER BY lm.created_at DESC
+        LIMIT 10`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error in GET /users/:id/matches:", err);
+    res.status(500).json({ error: "Failed to fetch recent matches" });
+  }
+});
+
+app.get("/users/:id/friends", async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const result = await db.query(
+      `SELECT u.username
+         FROM follows f
+         JOIN users u ON f.followee_id = u.id
+        WHERE f.follower_id = $1
+        ORDER BY u.username`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error in GET /users/:id/friends:", err);
+    res.status(500).json({ error: "Failed to fetch friends" });
+  }
+});
+
+// =================================================
+// Courts Endpoints (Local courts info)
 // =================================================
 
 app.get("/courts", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM courts ORDER BY created_at DESC");
+    const result = await db.query(
+      "SELECT * FROM courts ORDER BY created_at DESC"
+    );
     res.json(result.rows);
   } catch (err) {
     console.error("Error in GET /courts:", err);
@@ -214,7 +319,6 @@ app.get("/courts", async (req, res) => {
 // League & Ladder Endpoints
 // =================================================
 
-// Create a new league
 app.post("/leagues", async (req, res) => {
   try {
     const { name, description, created_by } = req.body;
@@ -230,10 +334,11 @@ app.post("/leagues", async (req, res) => {
   }
 });
 
-// Get all leagues
 app.get("/leagues", async (req, res) => {
   try {
-    const result = await db.query("SELECT * FROM leagues ORDER BY created_at DESC");
+    const result = await db.query(
+      "SELECT * FROM leagues ORDER BY created_at DESC"
+    );
     res.json(result.rows);
   } catch (err) {
     console.error("Error in GET /leagues:", err);
@@ -241,11 +346,12 @@ app.get("/leagues", async (req, res) => {
   }
 });
 
-// Get a single league by ID
 app.get("/leagues/:id", async (req, res) => {
   const leagueId = req.params.id;
   try {
-    const result = await db.query("SELECT * FROM leagues WHERE id = $1", [leagueId]);
+    const result = await db.query("SELECT * FROM leagues WHERE id = $1", [
+      leagueId,
+    ]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "League not found" });
     }
@@ -256,12 +362,14 @@ app.get("/leagues/:id", async (req, res) => {
   }
 });
 
-// Add a participant to a league (by username)
 app.post("/leagues/:id/participants", async (req, res) => {
   const leagueId = req.params.id;
   const { username } = req.body;
   try {
-    const userResult = await db.query("SELECT id FROM users WHERE username = $1", [username]);
+    const userResult = await db.query(
+      "SELECT id FROM users WHERE username = $1",
+      [username]
+    );
     if (userResult.rows.length === 0) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -278,7 +386,6 @@ app.post("/leagues/:id/participants", async (req, res) => {
   }
 });
 
-// Get league participants (sorted by rating DESC)
 app.get("/leagues/:id/participants", async (req, res) => {
   const leagueId = req.params.id;
   try {
@@ -297,168 +404,159 @@ app.get("/leagues/:id/participants", async (req, res) => {
   }
 });
 
-// Record a match (supports singles or doubles)
+/**
+ * POST /leagues/:id/matches
+ * Record a match for a league.
+ * For singles matches, expects: player1_username, player2_username, player1_score, player2_score.
+ * For doubles matches, expects: player1_username, player2_username, player3_username, player4_username, team1_score, team2_score.
+ * After inserting the match record, updates league_participants stats so the ladder reflects the new match,
+ * including updating wins, losses, matches played, last_match, and ratings.
+ */
 app.post("/leagues/:id/matches", async (req, res) => {
   const leagueId = req.params.id;
-  const { match_type } = req.body; // "singles" or "doubles"
+  const { match_type } = req.body;
+  // Helper function to get user id from username
+  const getUserId = async (username) => {
+    const result = await db.query("SELECT id FROM users WHERE username = $1", [
+      username,
+    ]);
+    return result.rows[0] ? result.rows[0].id : null;
+  };
+
   try {
     if (match_type === "doubles") {
-      // The front-end organizes Team 1 => (player1_username, player2_username)
-      // and Team 2 => (player3_username, player4_username)
-      const { 
-        player1_username, 
-        player2_username, 
-        player3_username, 
-        player4_username, 
-        team1_score, 
-        team2_score 
+      const {
+        player1_username,
+        player2_username,
+        player3_username,
+        player4_username,
+        team1_score,
+        team2_score,
       } = req.body;
-      
-      // Look up IDs
-      const user1Res = await db.query("SELECT id FROM users WHERE username = $1", [player1_username]);
-      const user2Res = await db.query("SELECT id FROM users WHERE username = $1", [player2_username]);
-      const user3Res = await db.query("SELECT id FROM users WHERE username = $1", [player3_username]);
-      const user4Res = await db.query("SELECT id FROM users WHERE username = $1", [player4_username]);
-      
-      if (
-        user1Res.rows.length === 0 ||
-        user2Res.rows.length === 0 ||
-        user3Res.rows.length === 0 ||
-        user4Res.rows.length === 0
-      ) {
-        return res.status(404).json({ error: "One or more users not found" });
+      const player1_id = await getUserId(player1_username);
+      const player2_id = await getUserId(player2_username);
+      const player3_id = await getUserId(player3_username);
+      const player4_id = await getUserId(player4_username);
+      if (!player1_id || !player2_id || !player3_id || !player4_id) {
+        return res.status(404).json({ error: "One or more players not found" });
       }
-      
-      const player1_id = user1Res.rows[0].id; // Team1
-      const player2_id = user2Res.rows[0].id; // Team1
-      const player3_id = user3Res.rows[0].id; // Team2
-      const player4_id = user4Res.rows[0].id; // Team2
-      
-      // Determine winner_team
       let winner_team = null;
-      if (team1_score > team2_score) {
-        winner_team = "team1";
-      } else if (team2_score > team1_score) {
-        winner_team = "team2";
-      }
-      
-      // Insert match row
+      if (team1_score > team2_score) winner_team = "team1";
+      else if (team2_score > team1_score) winner_team = "team2";
+
+      // Insert the doubles match record
       const matchResult = await db.query(
-        `INSERT INTO league_matches
-           (league_id, match_type, 
-            player1_id, player2_id, player3_id, player4_id, 
-            team1_score, team2_score, winner_team)
-         VALUES ($1, 'doubles', $2, $3, $4, $5, $6, $7, $8)
-         RETURNING *`,
-        [leagueId, player1_id, player2_id, player3_id, player4_id, team1_score, team2_score, winner_team]
+        `INSERT INTO league_matches 
+         (league_id, match_type, player1_id, player2_id, player3_id, player4_id, team1_score, team2_score, winner_team)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+        [
+          leagueId,
+          match_type,
+          player1_id,
+          player2_id,
+          player3_id,
+          player4_id,
+          team1_score,
+          team2_score,
+          winner_team,
+        ]
       );
-      
-      // Update ratings
-      if (winner_team) {
-        let winningIds = [];
-        let losingIds = [];
-        if (winner_team === "team1") {
-          winningIds = [player1_id, player2_id];
-          losingIds  = [player3_id, player4_id];
-        } else {
-          winningIds = [player3_id, player4_id];
-          losingIds  = [player1_id, player2_id];
-        }
-        for (const id of winningIds) {
-          await db.query(
-            `UPDATE league_participants
-               SET rating = rating + 10,
-                   wins = wins + 1,
-                   matches_played = matches_played + 1,
-                   last_match = NOW()
-             WHERE league_id = $1 AND user_id = $2`,
-            [leagueId, id]
-          );
-        }
-        for (const id of losingIds) {
-          await db.query(
-            `UPDATE league_participants
-               SET rating = rating - 5,
-                   losses = losses + 1,
-                   matches_played = matches_played + 1,
-                   last_match = NOW()
-             WHERE league_id = $1 AND user_id = $2`,
-            [leagueId, id]
-          );
-        }
-      } else {
-        // tie => increment matches_played for all
-        await db.query(
-          `UPDATE league_participants
-             SET matches_played = matches_played + 1,
-                 last_match = NOW()
-           WHERE league_id = $1
-             AND user_id IN ($2, $3, $4, $5)`,
-          [leagueId, player1_id, player2_id, player3_id, player4_id]
-        );
-      }
-      
-      return res.status(201).json(matchResult.rows[0]);
-      
-    } else {
-      // singles
-      const { player1_username, player2_username, player1_score, player2_score } = req.body;
-      const user1Res = await db.query("SELECT id FROM users WHERE username = $1", [player1_username]);
-      const user2Res = await db.query("SELECT id FROM users WHERE username = $1", [player2_username]);
-      if (user1Res.rows.length === 0 || user2Res.rows.length === 0) {
-        return res.status(404).json({ error: "One or both users not found" });
-      }
-      const player1_id = user1Res.rows[0].id;
-      const player2_id = user2Res.rows[0].id;
-      
-      let winner_id = null;
-      if (player1_score > player2_score) {
-        winner_id = player1_id;
-      } else if (player2_score > player1_score) {
-        winner_id = player2_id;
-      }
-      
-      const matchResult = await db.query(
-        `INSERT INTO league_matches
-           (league_id, match_type, 
-            player1_id, player2_id, 
-            player1_score, player2_score, winner_id)
-         VALUES ($1, 'singles', $2, $3, $4, $5, $6)
-         RETURNING *`,
-        [leagueId, player1_id, player2_id, player1_score, player2_score, winner_id]
+
+      // Update league_participants: increment matches_played and update last_match for all four players
+      await db.query(
+        `UPDATE league_participants
+         SET matches_played = matches_played + 1, last_match = NOW()
+         WHERE league_id = $1 AND user_id IN ($2, $3, $4, $5)`,
+        [leagueId, player1_id, player2_id, player3_id, player4_id]
       );
-      
-      if (winner_id) {
-        const loser_id = (winner_id === player1_id) ? player2_id : player1_id;
+
+      // Update wins/losses and ratings based on winner_team
+      if (winner_team === "team1") {
         await db.query(
           `UPDATE league_participants
-             SET rating = rating + 10,
-                 wins = wins + 1,
-                 matches_played = matches_played + 1,
-                 last_match = NOW()
-           WHERE league_id = $1 AND user_id = $2`,
-          [leagueId, winner_id]
+           SET wins = wins + 1, rating = rating + 10
+           WHERE league_id = $1 AND user_id IN ($2, $3)`,
+          [leagueId, player1_id, player2_id]
         );
         await db.query(
           `UPDATE league_participants
-             SET rating = rating - 5,
-                 losses = losses + 1,
-                 matches_played = matches_played + 1,
-                 last_match = NOW()
-           WHERE league_id = $1 AND user_id = $2`,
-          [leagueId, loser_id]
+           SET losses = losses + 1, rating = rating - 10
+           WHERE league_id = $1 AND user_id IN ($2, $3)`,
+          [leagueId, player3_id, player4_id]
         );
-      } else {
-        // tie => increment matches_played for both
+      } else if (winner_team === "team2") {
         await db.query(
           `UPDATE league_participants
-             SET matches_played = matches_played + 1,
-                 last_match = NOW()
-           WHERE league_id = $1
-             AND user_id IN ($2, $3)`,
+           SET wins = wins + 1, rating = rating + 10
+           WHERE league_id = $1 AND user_id IN ($2, $3)`,
+          [leagueId, player3_id, player4_id]
+        );
+        await db.query(
+          `UPDATE league_participants
+           SET losses = losses + 1, rating = rating - 10
+           WHERE league_id = $1 AND user_id IN ($2, $3)`,
           [leagueId, player1_id, player2_id]
         );
       }
+      // Optionally: more refined rating algorithm here
+      return res.status(201).json(matchResult.rows[0]);
+    } else {
+      // Singles match
+      const {
+        player1_username,
+        player2_username,
+        player1_score,
+        player2_score,
+      } = req.body;
+      const player1_id = await getUserId(player1_username);
+      const player2_id = await getUserId(player2_username);
+      if (!player1_id || !player2_id) {
+        return res.status(404).json({ error: "One or both players not found" });
+      }
+      let winner_id = null;
+      if (player1_score > player2_score) winner_id = player1_id;
+      else if (player2_score > player1_score) winner_id = player2_id;
+
+      // Insert the singles match record
+      const matchResult = await db.query(
+        `INSERT INTO league_matches 
+         (league_id, match_type, player1_id, player2_id, player1_score, player2_score, winner_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [
+          leagueId,
+          match_type,
+          player1_id,
+          player2_id,
+          player1_score,
+          player2_score,
+          winner_id,
+        ]
+      );
+
+      // Update league_participants for both players
+      await db.query(
+        `UPDATE league_participants
+         SET matches_played = matches_played + 1, last_match = NOW()
+         WHERE league_id = $1 AND user_id IN ($2, $3)`,
+        [leagueId, player1_id, player2_id]
+      );
+
+      if (winner_id) {
+        await db.query(
+          `UPDATE league_participants
+           SET wins = wins + 1, rating = rating + 10
+           WHERE league_id = $1 AND user_id = $2`,
+          [leagueId, winner_id]
+        );
+        const loser_id = winner_id === player1_id ? player2_id : player1_id;
+        await db.query(
+          `UPDATE league_participants
+           SET losses = losses + 1, rating = rating - 10
+           WHERE league_id = $1 AND user_id = $2`,
+          [leagueId, loser_id]
+        );
+      }
+      // Optionally: refined rating calculation
       return res.status(201).json(matchResult.rows[0]);
     }
   } catch (err) {
@@ -467,7 +565,6 @@ app.post("/leagues/:id/matches", async (req, res) => {
   }
 });
 
-// Get matches in a league
 app.get("/leagues/:id/matches", async (req, res) => {
   const leagueId = req.params.id;
   try {
@@ -483,7 +580,7 @@ app.get("/leagues/:id/matches", async (req, res) => {
          LEFT JOIN users u3 ON lm.player3_id = u3.id
          LEFT JOIN users u4 ON lm.player4_id = u4.id
         WHERE lm.league_id = $1
-        ORDER BY lm.played_at DESC`,
+        ORDER BY lm.created_at DESC`,
       [leagueId]
     );
     res.json(result.rows);
@@ -493,7 +590,6 @@ app.get("/leagues/:id/matches", async (req, res) => {
   }
 });
 
-// Get league ladder (ranking)
 app.get("/leagues/:id/ladder", async (req, res) => {
   const leagueId = req.params.id;
   try {
@@ -512,7 +608,7 @@ app.get("/leagues/:id/ladder", async (req, res) => {
       wins: p.wins,
       losses: p.losses,
       matches_played: p.matches_played,
-      last_match: p.last_match
+      last_match: p.last_match,
     }));
     res.json(ladder);
   } catch (err) {
@@ -520,7 +616,6 @@ app.get("/leagues/:id/ladder", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch ladder" });
   }
 });
-
 
 // =================================================
 // Start the Server
