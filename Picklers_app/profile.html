@@ -1,302 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Picklers Profile</title>
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
-  />
-  <!-- SweetAlert2 for popups -->
-  <script src="http://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    .settings-popout {
-      position: fixed;
-      top: 50%;
-      right: -100%;
-      transform: translateY(-50%);
-      width: 300px;
-      background: #fff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      transition: right 0.3s ease;
-      z-index: 1000;
-      padding: 1rem;
-    }
-    .settings-popout.is-active {
-      right: 20px;
-    }
-    html,
-    body {
-      height: 100%;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-    .main-content {
-      flex: 1;
-    }
-  </style>
-</head>
-<body>
-  <nav class="navbar has-background-black">
-  <div class="navbar-brand">
-    <a class="navbar-item has-text-white" href="pickler-pointer.html">
-      <span class="ml-2 is-size-4">Picklers</span>
-    </a>
-    <div class="navbar-burger burger" data-target="navbarMenu">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-  <div id="navbarMenu" class="navbar-menu has-background-black">
-    <div class="navbar-start">
-      <a class="navbar-item has-text-white" href="pickler-pointer.html">Pickler Pointer</a>
-      <a class="navbar-item has-text-white" href="leagues.html">Leagues</a>
-      <a class="navbar-item has-text-white" href="profile.html">Profile</a>
-      <a class="navbar-item has-text-white" href="courtTimes.html">Court Times</a>
-    </div>
-    <div class="navbar-end">
-      <div class="navbar-item">
-        <p class="has-text-white" id="navbar-greeting">Hello, Guest</p>
-      </div>
-      <div class="navbar-item">
-        <button class="button is-danger is-small" id="nav-logout-btn">Log Out</button>
-      </div>
-    </div>
-  </div>
-</nav>
-
-
-
-  <!-- Main Section -->
-  <section class="section main-content">
-    <div class="container">
-      <div class="box">
-        <div class="columns">
-          <div class="column">
-            <h1 class="title" id="user-name">Loading...</h1>
-            <p class="subtitle" id="user-summary">Loading summary...</p>
-            <p><strong>🏠 Home Court:</strong> <span id="home-court">Loading...</span></p>
-          </div>
-          <div class="column is-narrow">
-            <button class="button is-primary" id="settings-button">Settings</button>
-          </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Picklers Profile</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+    <!-- SweetAlert2 for popups -->
+    <script src="http://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      .settings-popout {
+        position: fixed;
+        top: 50%;
+        right: -100%;
+        transform: translateY(-50%);
+        width: 300px;
+        background: #fff;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        transition: right 0.3s ease;
+        z-index: 1000;
+        padding: 1rem;
+      }
+      .settings-popout.is-active {
+        right: 20px;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .main-content {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar has-background-black">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-white" href="pickler-pointer.html">
+          <span class="ml-2 is-size-4">Picklers</span>
+        </a>
+        <div class="navbar-burger burger" data-target="navbarMenu">
+          <span></span><span></span><span></span>
         </div>
-
-        <hr />
-
-        <div>
-          <h2 class="title is-4">Recent Matches</h2>
-          <div id="recent-matches">
-            <p>Loading matches...</p>
-          </div>
+      </div>
+      <div id="navbarMenu" class="navbar-menu has-background-black">
+        <div class="navbar-start">
+          <a class="navbar-item has-text-white" href="pickler-pointer.html"
+            >Pickler Pointer</a
+          >
+          <a class="navbar-item has-text-white" href="leagues.html">Leagues</a>
+          <a class="navbar-item has-text-white" href="profile.html">Profile</a>
+          <a class="navbar-item has-text-white" href="courtTimes.html"
+            >Court Times</a
+          >
         </div>
-
-        <hr />
-
-        <div>
-          <h2 class="title is-4">Friends</h2>
-          <div id="friends-list">
-            <p>Loading friends...</p>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <p class="has-text-white" id="navbar-greeting">Hello, Guest</p>
+          </div>
+          <div class="navbar-item">
+            <button class="button is-danger is-small" id="nav-logout-btn">
+              Log Out
+            </button>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </nav>
 
-  <!-- Settings Popout -->
-  <div class="settings-popout" id="settings-popout">
-    <h2 class="title is-5">Settings</h2>
-    <hr />
-    <div class="field">
-      <label class="label">Change Username</label>
-      <div class="control">
-        <input class="input" type="text" id="new-username" placeholder="New username" />
+    <!-- Main Section -->
+    <section class="section main-content">
+      <div class="container">
+        <div class="box">
+          <div class="columns">
+            <div class="column">
+              <h1 class="title" id="user-name">Loading...</h1>
+              <p class="subtitle" id="user-summary">Loading summary...</p>
+              <p>
+                <strong>🏠 Home Court:</strong>
+                <span id="home-court">Loading...</span>
+              </p>
+            </div>
+            <div class="column is-narrow">
+              <button class="button is-primary" id="settings-button">
+                Settings
+              </button>
+            </div>
+          </div>
+
+          <hr />
+
+          <div>
+            <h2 class="title is-4">Recent Matches</h2>
+            <div id="recent-matches">
+              <p>Loading matches...</p>
+            </div>
+          </div>
+
+          <hr />
+
+          <div>
+            <h2 class="title is-4">Friends</h2>
+            <div id="friends-list">
+              <p>Loading friends...</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="field">
-      <label class="label">Change Summary</label>
-      <div class="control">
-        <input class="input" type="text" id="new-summary" placeholder="New summary" />
+    </section>
+
+    <!-- Settings Popout -->
+    <div class="settings-popout" id="settings-popout">
+      <h2 class="title is-5">Settings</h2>
+      <hr />
+      <div class="field">
+        <label class="label">Change Username</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="new-username"
+            placeholder="New username"
+          />
+        </div>
       </div>
-    </div>
-    <div class="field">
-      <label class="label">Change Home Court</label>
-      <div class="control">
-        <div class="select is-fullwidth">
-          <select id="court-select">
-            <option value="">Select a Court</option>
-          </select>
+      <div class="field">
+        <label class="label">Change Summary</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="new-summary"
+            placeholder="New summary"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Change Home Court</label>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <select id="court-select">
+              <option value="">Select a Court</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-success" id="save-settings">Save</button>
+        </div>
+        <div class="control">
+          <button class="button is-light" id="close-settings">Cancel</button>
         </div>
       </div>
     </div>
-    <div class="field is-grouped">
-      <div class="control">
-        <button class="button is-success" id="save-settings">Save</button>
-      </div>
-      <div class="control">
-        <button class="button is-light" id="close-settings">Cancel</button>
-      </div>
-    </div>
-  </div>
 
-  <script>
-    const BASE_URL = "http://localhost:3000";
+    <script>
+      const BASE_URL = "http://localhost:3000";
 
-    const storedUser = localStorage.getItem("currentUser");
-    if (!storedUser) {
-      window.location.href = "index.html";
-    }
-    let currentUser = JSON.parse(storedUser);
-
-    // Update the DOM with user info
-    function updateDOMProfile(user) {
-      document.getElementById("user-name").textContent = user.username || "Unknown User";
-      document.getElementById("user-summary").textContent = user.summary || "No summary provided.";
-      document.getElementById("home-court").textContent = user.home_court || "Not set";
-      document.getElementById("navbar-greeting").textContent = "Hello, " + (user.username || "Guest");
-    }
-
-    // Load the user's profile data from /users/:id
-    function loadProfileData() {
-      fetch(`${BASE_URL}/users/${currentUser.id}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch user profile");
-          return res.json();
-        })
-        .then(user => {
-          currentUser = user; // update local copy
-          localStorage.setItem("currentUser", JSON.stringify(user));
-          updateDOMProfile(user);
-        })
-        .catch(err => {
-          console.error("Error loading profile:", err);
-          document.getElementById("user-name").textContent = "Error loading profile";
-        });
-    }
-
-    // Load recent matches from /users/:id/matches
-    function loadRecentMatches() {
-      const container = document.getElementById("recent-matches");
-      container.innerHTML = "<p>Loading matches...</p>";
-      fetch(`${BASE_URL}/users/${currentUser.id}/matches`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch matches");
-          return res.json();
-        })
-        .then(matches => {
-          if (!Array.isArray(matches) || matches.length === 0) {
-            container.innerHTML = "<p>No recent matches.</p>";
-          } else {
-            container.innerHTML = matches.map(m => `
-              <p>🏓 ${m.result} (${new Date(m.played_at).toLocaleDateString()})</p>
-            `).join("");
-          }
-        })
-        .catch(err => {
-          console.error("Matches error:", err);
-          container.innerHTML = "<p>Error loading matches.</p>";
-        });
-    }
-
-    // Load friends from /users/:id/friends
-    function loadFriends() {
-      const container = document.getElementById("friends-list");
-      container.innerHTML = "<p>Loading friends...</p>";
-      fetch(`${BASE_URL}/users/${currentUser.id}/friends`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch friends");
-          return res.json();
-        })
-        .then(friends => {
-          if (!Array.isArray(friends) || friends.length === 0) {
-            container.innerHTML = "<p>No friends found.</p>";
-          } else {
-            container.innerHTML = friends.map(f => `<p>🎾 ${f.username}</p>`).join("");
-          }
-        })
-        .catch(err => {
-          console.error("Friends error:", err);
-          container.innerHTML = "<p>Error loading friends.</p>";
-        });
-    }
-
-    // Load courts for the home court dropdown from /courts
-    function loadCourtsDropdown() {
-      const select = document.getElementById("court-select");
-      select.innerHTML = '<option value="">Select a Court</option>';
-      fetch(`${BASE_URL}/courts`)
-        .then(res => {
-          if (!res.ok) throw new Error("Failed to fetch courts");
-          return res.json();
-        })
-        .then(courts => {
-          if (Array.isArray(courts) && courts.length > 0) {
-            courts.forEach(c => {
-              const option = document.createElement("option");
-              option.value = c.name;
-              option.textContent = c.name;
-              select.appendChild(option);
-            });
-          }
-        })
-        .catch(err => {
-          console.error("Courts error:", err);
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      // Navbar burger toggle
-      const burger = document.querySelector(".navbar-burger");
-      const menu = document.getElementById("navbarMenu");
-      burger.addEventListener("click", () => {
-        burger.classList.toggle("is-active");
-        menu.classList.toggle("is-active");
-      });
-
-      // Load everything
-      loadProfileData();
-      loadRecentMatches();
-      loadFriends();
-      loadCourtsDropdown();
-
-      // Logout
-      document.getElementById("nav-logout-btn").addEventListener("click", () => {
-        localStorage.removeItem("currentUser");
+      const storedUser = localStorage.getItem("currentUser");
+      if (!storedUser) {
         window.location.href = "index.html";
+      }
+      let currentUser = JSON.parse(storedUser);
+
+      // Update the DOM with user info
+      function updateDOMProfile(user) {
+        document.getElementById("user-name").textContent =
+          user.username || "Unknown User";
+        document.getElementById("user-summary").textContent =
+          user.summary || "No summary provided.";
+        document.getElementById("home-court").textContent =
+          user.home_court || "Not set";
+        document.getElementById("navbar-greeting").textContent =
+          "Hello, " + (user.username || "Guest");
+      }
+
+      // Load the user's profile data from /users/:id
+      function loadProfileData() {
+        fetch(`${BASE_URL}/users/${currentUser.id}`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch user profile");
+            return res.json();
+          })
+          .then((user) => {
+            currentUser = user; // update local copy
+            localStorage.setItem("currentUser", JSON.stringify(user));
+            updateDOMProfile(user);
+          })
+          .catch((err) => {
+            console.error("Error loading profile:", err);
+            document.getElementById("user-name").textContent =
+              "Error loading profile";
+          });
+      }
+
+      // Load recent matches from /users/:id/matches
+      function loadRecentMatches() {
+        const container = document.getElementById("recent-matches");
+        container.innerHTML = "<p>Loading matches...</p>";
+        fetch(`${BASE_URL}/users/${currentUser.id}/matches`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch matches");
+            return res.json();
+          })
+          .then((matches) => {
+            if (!Array.isArray(matches) || matches.length === 0) {
+              container.innerHTML = "<p>No recent matches.</p>";
+            } else {
+              container.innerHTML = matches
+                .map(
+                  (m) => `
+              <p>🏓 ${m.result} (${new Date(
+                    m.played_at
+                  ).toLocaleDateString()})</p>
+            `
+                )
+                .join("");
+            }
+          })
+          .catch((err) => {
+            console.error("Matches error:", err);
+            container.innerHTML = "<p>Error loading matches.</p>";
+          });
+      }
+
+      // Load friends from /users/:id/friends
+      function loadFriends() {
+        const container = document.getElementById("friends-list");
+        container.innerHTML = "<p>Loading friends...</p>";
+        fetch(`${BASE_URL}/users/${currentUser.id}/friends`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch friends");
+            return res.json();
+          })
+          .then((friends) => {
+            if (!Array.isArray(friends) || friends.length === 0) {
+              container.innerHTML = "<p>No friends found.</p>";
+            } else {
+              container.innerHTML = friends
+                .map((f) => `<p>🎾 ${f.username}</p>`)
+                .join("");
+            }
+          })
+          .catch((err) => {
+            console.error("Friends error:", err);
+            container.innerHTML = "<p>Error loading friends.</p>";
+          });
+      }
+
+      // Load courts for the home court dropdown from /courts
+      function loadCourtsDropdown() {
+        const select = document.getElementById("court-select");
+        select.innerHTML = '<option value="">Select a Court</option>';
+        fetch(`${BASE_URL}/courts`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch courts");
+            return res.json();
+          })
+          .then((courts) => {
+            if (Array.isArray(courts) && courts.length > 0) {
+              courts.forEach((c) => {
+                const option = document.createElement("option");
+                option.value = c.name;
+                option.textContent = c.name;
+                select.appendChild(option);
+              });
+            }
+          })
+          .catch((err) => {
+            console.error("Courts error:", err);
+          });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Navbar burger toggle
+        const burger = document.querySelector(".navbar-burger");
+        const menu = document.getElementById("navbarMenu");
+        burger.addEventListener("click", () => {
+          burger.classList.toggle("is-active");
+          menu.classList.toggle("is-active");
+        });
+
+        // Load everything
+        loadProfileData();
+        loadRecentMatches();
+        loadFriends();
+        loadCourtsDropdown();
+
+        // Logout
+        document
+          .getElementById("nav-logout-btn")
+          .addEventListener("click", () => {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+          });
+
+        // Settings popout
+        const settingsButton = document.getElementById("settings-button");
+        const settingsPopout = document.getElementById("settings-popout");
+        const closeSettings = document.getElementById("close-settings");
+
+        settingsButton.addEventListener("click", () => {
+          settingsPopout.classList.add("is-active");
+        });
+        closeSettings.addEventListener("click", () => {
+          settingsPopout.classList.remove("is-active");
+        });
+
+        // Save settings
+        document
+          .getElementById("save-settings")
+          .addEventListener("click", () => {
+            const newUsername = document
+              .getElementById("new-username")
+              .value.trim();
+            const newSummary = document
+              .getElementById("new-summary")
+              .value.trim();
+            const newHomeCourt = document.getElementById("court-select").value;
+            if (newUsername) currentUser.username = newUsername;
+            if (newSummary) currentUser.summary = newSummary;
+            if (newHomeCourt) currentUser.home_court = newHomeCourt;
+
+            // Optionally: Send PATCH /users/:id to persist in DB
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+            updateDOMProfile(currentUser);
+
+            settingsPopout.classList.remove("is-active");
+            Swal.fire("Saved!", "Your settings have been updated.", "success");
+          });
       });
-
-      // Settings popout
-      const settingsButton = document.getElementById("settings-button");
-      const settingsPopout = document.getElementById("settings-popout");
-      const closeSettings = document.getElementById("close-settings");
-
-      settingsButton.addEventListener("click", () => {
-        settingsPopout.classList.add("is-active");
-      });
-      closeSettings.addEventListener("click", () => {
-        settingsPopout.classList.remove("is-active");
-      });
-
-      // Save settings
-      document.getElementById("save-settings").addEventListener("click", () => {
-        const newUsername = document.getElementById("new-username").value.trim();
-        const newSummary = document.getElementById("new-summary").value.trim();
-        const newHomeCourt = document.getElementById("court-select").value;
-        if (newUsername) currentUser.username = newUsername;
-        if (newSummary) currentUser.summary = newSummary;
-        if (newHomeCourt) currentUser.home_court = newHomeCourt;
-
-        // Optionally: Send PATCH /users/:id to persist in DB
-        localStorage.setItem("currentUser", JSON.stringify(currentUser));
-        updateDOMProfile(currentUser);
-
-        settingsPopout.classList.remove("is-active");
-        Swal.fire("Saved!", "Your settings have been updated.", "success");
-      });
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
