@@ -267,11 +267,33 @@ app.get("/users/:id/matches", async (req, res) => {
   const userId = parseInt(req.params.id, 10);
   try {
     const result = await db.query(
-      `SELECT lm.result, lm.created_at AS played_at
-         FROM league_matches lm
-        WHERE $1 IN (lm.player1_id, lm.player2_id, lm.player3_id, lm.player4_id)
-        ORDER BY lm.created_at DESC
-        LIMIT 10`,
+      `SELECT 
+          created_at AS played_at,
+          CASE 
+            WHEN match_type = 'singles' 
+                 AND ((player1_id = $1 AND player1_score > player2_score)
+                      OR (player2_id = $1 AND player2_score > player1_score)) 
+              THEN 'Win'
+            WHEN match_type = 'singles' 
+                 AND ((player1_id = $1 AND player1_score < player2_score)
+                      OR (player2_id = $1 AND player2_score < player1_score))
+              THEN 'Loss'
+            WHEN match_type = 'singles'
+              THEN 'Tie'
+            WHEN match_type = 'doubles'
+                 AND (($1 IN (player1_id, player2_id) AND winner_team = 'team1')
+                      OR ($1 IN (player3_id, player4_id) AND winner_team = 'team2'))
+              THEN 'Win'
+            WHEN match_type = 'doubles'
+                 AND (($1 IN (player1_id, player2_id) AND winner_team = 'team2')
+                      OR ($1 IN (player3_id, player4_id) AND winner_team = 'team1'))
+              THEN 'Loss'
+            ELSE 'Tie/Unknown'
+          END AS result
+       FROM league_matches
+      WHERE $1 IN (player1_id, player2_id, player3_id, player4_id)
+      ORDER BY created_at DESC
+      LIMIT 10`,
       [userId]
     );
     res.json(result.rows);
@@ -280,6 +302,9 @@ app.get("/users/:id/matches", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch recent matches" });
   }
 });
+
+
+
 
 app.get("/users/:id/friends", async (req, res) => {
   const userId = req.params.id;
@@ -614,6 +639,29 @@ app.get("/leagues/:id/ladder", async (req, res) => {
   } catch (err) {
     console.error("Error in GET /leagues/:id/ladder:", err);
     res.status(500).json({ error: "Failed to fetch ladder" });
+  }
+});
+
+app.patch("/users/:id", async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const { username, summary, home_court } = req.body;
+    const result = await db.query(
+      `UPDATE users 
+         SET username = COALESCE($1, username),
+             summary = COALESCE($2, summary),
+             home_court = COALESCE($3, home_court)
+       WHERE id = $4 
+       RETURNING id, username, summary, home_court`,
+      [username, summary, home_court, userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error in PATCH /users/:id:", err);
+    res.status(500).json({ error: "Failed to update user" });
   }
 });
 
