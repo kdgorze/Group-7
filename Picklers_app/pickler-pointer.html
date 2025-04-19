@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pickler Pointer</title>
+
+    <!-- Bulma CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
+    />
+    <style>
+      /* Basic styling for feed posts and friend cards */
+      .feed-post {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+      }
+      .friend-card {
+        border: 1px solid #ddd;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+      .modal.is-active {
+        display: flex;
+      }
+    </style>
+  </head>
+  <body>
+      <nav class="navbar has-background-black">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-white" href="pickler-pointer.html">
+          <span class="ml-2 is-size-4">Picklers</span>
+        </a>
+        <div class="navbar-burger burger" data-target="navbarMenu">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div id="navbarMenu" class="navbar-menu has-background-black">
+        <div class="navbar-start">
+          <a class="navbar-item has-text-white" href="pickler-pointer.html"
+            >Pickler Pointer</a
+          >
+          <a class="navbar-item has-text-white" href="leagues.html">Leagues</a>
+          <a class="navbar-item has-text-white" href="profile.html">Profile</a>
+          <a class="navbar-item has-text-white" href="courtTimes.html"
+            >Court Times</a
+          >
+        </div>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <a class="has-text-white" id="navbar-greeting" href="profile.html"
+              >Hello, Guest</a
+            >
+          </div>
+          <div class="navbar-item">
+            <button class="button is-danger is-small" id="nav-logout-btn">
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content Section -->
+    <section class="section">
+      <div class="container">
+        <h1 class="title">Pickler Pointer</h1>
+        <div class="columns">
+          <!-- Feed Column -->
+          <div class="column is-6">
+            <div class="level">
+              <div class="level-left">
+                <h2 class="subtitle">Feed</h2>
+              </div>
+              <div class="level-right">
+                <!-- Button to open the new post modal -->
+                <button class="button is-small is-info" id="open-post-modal">
+                  +
+                </button>
+              </div>
+            </div>
+            <div id="feed">
+              <p>Loading posts...</p>
+            </div>
+          </div>
+
+          <!-- Friends Column -->
+          <div class="column is-6">
+            <h2 class="subtitle">Find Pickler Friends</h2>
+            <div id="friends">
+              <!-- Friend cards will be dynamically generated -->
+              <p>Loading friends...</p>
+            </div>
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- Courts Section -->
+        <div>
+          <h2 class="subtitle">Nearby Courts</h2>
+          <div class="content">
+            <table class="table is-fullwidth">
+              <thead>
+                <tr>
+                  <th>Court Name</th>
+                  <th>Address</th>
+                </tr>
+              </thead>
+              <tbody id="courts-list">
+                <tr>
+                  <td colspan="2">Loading courts...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal for Creating a New Post -->
+    <div class="modal" id="post-modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Create a New Post</p>
+          <button
+            class="delete"
+            aria-label="close"
+            id="close-post-modal"
+          ></button>
+        </header>
+        <section class="modal-card-body">
+          <textarea
+            id="modal-post-content"
+            class="textarea"
+            placeholder="What's on your mind?"
+          ></textarea>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success" id="modal-post-btn">Post</button>
+          <button class="button" id="cancel-post-btn">Cancel</button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Include SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      const BASE_URL = "https://seniorprojectapi-qm1k.onrender.com";
+      let currentFollowing = []; // Global list of usernames the current user is following
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Check login
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
+          window.location.href = "index.html";
+          return;
+        }
+        const currentUser = JSON.parse(storedUser);
+
+        // Update greeting
+        document.getElementById("navbar-greeting").textContent =
+          "Hello, " + (currentUser.username || "Guest");
+
+        // Navbar burger toggle
+        const burger = document.querySelector(".burger");
+        const menu = document.getElementById(burger.dataset.target);
+        burger.addEventListener("click", () => {
+          burger.classList.toggle("is-active");
+          menu.classList.toggle("is-active");
+        });
+
+        // Setup logout
+        document
+          .getElementById("nav-logout-btn")
+          .addEventListener("click", () => {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+          });
+
+        // Load feed and courts
+        loadPosts();
+        loadCourts();
+        // Load friends (dynamically fetched)
+        loadFriends(currentUser);
+
+        // Setup post modal
+        document
+          .getElementById("open-post-modal")
+          .addEventListener("click", openPostModal);
+        document
+          .getElementById("cancel-post-btn")
+          .addEventListener("click", closePostModal);
+        document
+          .getElementById("close-post-modal")
+          .addEventListener("click", closePostModal);
+        document
+          .getElementById("modal-post-btn")
+          .addEventListener("click", createPost);
+      });
+
+      // -----------------------------
+      // Load posts from /posts
+      // -----------------------------
+      function loadPosts() {
+        const feed = document.getElementById("feed");
+        feed.innerHTML = "<p>Loading posts...</p>";
+        fetch(`${BASE_URL}/posts`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch posts");
+            return res.json();
+          })
+          .then((posts) => {
+            if (!Array.isArray(posts) || posts.length === 0) {
+              feed.innerHTML = "<p>No posts yet.</p>";
+              return;
+            }
+            feed.innerHTML = posts
+              .map((post) => {
+                const dateStr = new Date(post.created_at).toLocaleString();
+                return `
+                <div class="feed-post">
+                  <p><strong>${post.username}</strong> posted: ${post.content}</p>
+                  <small>${dateStr}</small>
+                </div>
+              `;
+              })
+              .join("");
+          })
+          .catch((err) => {
+            feed.innerHTML = `<p>Error loading posts: ${err.message}</p>`;
+          });
+      }
+
+      // -----------------------------
+      // Create new post using SweetAlert2
+      // -----------------------------
+      function createPost() {
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
+          Swal.fire("Error", "You must be logged in to post.", "error");
+          return;
+        }
+        const userObj = JSON.parse(storedUser);
+        const content = document
+          .getElementById("modal-post-content")
+          .value.trim();
+        if (!content) {
+          Swal.fire(
+            "Error",
+            "Please enter some content for your post.",
+            "error"
+          );
+          return;
+        }
+        const payload = { user_id: userObj.id, content };
+        fetch(`${BASE_URL}/posts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to create post");
+            return res.json();
+          })
+          .then(() => {
+            closePostModal();
+            loadPosts();
+            Swal.fire("Success", "Your post was created!", "success");
+          })
+          .catch((err) => {
+            Swal.fire("Error", err.message, "error");
+          });
+      }
+
+      // -----------------------------
+      // Load courts from /courts
+      // -----------------------------
+      function loadCourts() {
+        const courtsList = document.getElementById("courts-list");
+        courtsList.innerHTML =
+          "<tr><td colspan='2'>Loading courts...</td></tr>";
+        fetch(`${BASE_URL}/courts`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch courts");
+            return res.json();
+          })
+          .then((courts) => {
+            if (!Array.isArray(courts) || courts.length === 0) {
+              courtsList.innerHTML =
+                "<tr><td colspan='2'>No courts found.</td></tr>";
+              return;
+            }
+            courtsList.innerHTML = courts
+              .map(
+                (c) => `
+              <tr>
+                <td>${c.name}</td>
+                <td>${c.address}</td>
+              </tr>
+            `
+              )
+              .join("");
+          })
+          .catch((err) => {
+            courtsList.innerHTML = `<tr><td colspan='2'>Error: ${err.message}</td></tr>`;
+          });
+      }
+
+      // -----------------------------
+      // Load all users (except current user) as friend candidates and update follow button state
+      // -----------------------------
+      function loadFriends(currentUser) {
+        fetch(`${BASE_URL}/users`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to fetch users");
+            return res.json();
+          })
+          .then((allUsers) => {
+            // If /users returns an array, otherwise adjust accordingly.
+            // Filter out the current user.
+            const friendCandidates = allUsers.filter(
+              (user) => user.id !== currentUser.id
+            );
+            // Now fetch the list of users that currentUser is following.
+            fetch(`${BASE_URL}/users/${currentUser.id}/following`)
+              .then((res) => {
+                if (!res.ok) throw new Error("Failed to fetch following list");
+                return res.json();
+              })
+              .then((followingList) => {
+                // Create an array of usernames the current user is following.
+                const followingUsernames = followingList.map((u) => u.username);
+                currentFollowing = followingUsernames;
+                // Build HTML for friend cards.
+                let html = "";
+                friendCandidates.forEach((user) => {
+                  const isFollowing = followingUsernames.includes(
+                    user.username
+                  );
+                  html += `
+                    <div class="friend-card">
+                      <div class="media">
+                        <div class="media-content">
+                          <p class="title is-5">${user.username}</p>
+                          <p class="subtitle is-6">@${user.username.toLowerCase()}</p>
+                        </div>
+                        <div class="media-right">
+                          <button class="button is-small follow-btn" data-username="${
+                            user.username
+                          }">
+                            ${isFollowing ? "Following" : "Follow"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                });
+                document.getElementById("friends").innerHTML = html;
+                // Now setup event listeners on these buttons.
+                setupFollowButtons();
+              })
+              .catch((err) => {
+                console.error("Error fetching following list:", err);
+              });
+          })
+          .catch((err) => {
+            console.error("Error fetching users:", err);
+          });
+      }
+
+      // -----------------------------
+      // Setup follow/unfollow event listeners on friend cards
+      // -----------------------------
+      function setupFollowButtons() {
+        document.querySelectorAll(".follow-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const friendUsername = btn.getAttribute("data-username");
+            // If already following, trigger unfollow flow
+            if (btn.textContent.trim() === "Following") {
+              Swal.fire({
+                title: "Unfollow User",
+                text: `Do you want to unfollow @${friendUsername}?`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, unfollow",
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  unfollowFriend(friendUsername, btn);
+                }
+              });
+            } else {
+              // Otherwise, follow
+              Swal.fire({
+                title: "Follow User",
+                text: `Do you want to follow @${friendUsername}?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Yes, follow",
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  followFriend(friendUsername, btn);
+                }
+              });
+            }
+          });
+        });
+      }
+
+      // -----------------------------
+      // Follow a user (POST /follows)
+      // -----------------------------
+      function followFriend(friendUsername, button) {
+        button.disabled = true;
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
+          Swal.fire(
+            "Error",
+            "You must be logged in to follow someone.",
+            "error"
+          );
+          button.disabled = false;
+          return;
+        }
+        const currentUser = JSON.parse(storedUser);
+        // Get friend's details
+        fetch(`${BASE_URL}/users?username=${friendUsername}`)
+          .then((res) => {
+            if (!res.ok) throw new Error("User not found");
+            return res.json();
+          })
+          .then((friend) => {
+            const friendId = friend.id;
+            return fetch(`${BASE_URL}/follows`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                follower_id: currentUser.id,
+                followee_id: friendId,
+              }),
+            });
+          })
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to follow user");
+            Swal.fire(
+              "Success",
+              `You are now following @${friendUsername}`,
+              "success"
+            );
+            button.textContent = "Following";
+            button.classList.remove("is-primary");
+            button.classList.add("is-success");
+            button.disabled = false;
+          })
+          .catch((err) => {
+            Swal.fire("Error", err.message, "error");
+            button.disabled = false;
+          });
+      }
+
+      // -----------------------------
+      // Unfollow a user (DELETE /follows)
+      // -----------------------------
+      function unfollowFriend(friendUsername, button) {
+        button.disabled = true;
+        const storedUser = localStorage.getItem("currentUser");
+        if (!storedUser) {
+          Swal.fire(
+            "Error",
+            "You must be logged in to unfollow someone.",
+            "error"
+          );
+          button.disabled = false;
+          return;
+        }
+        const currentUser = JSON.parse(storedUser);
+        // Get friend's details
+        fetch(`${BASE_URL}/users?username=${friendUsername}`)
+          .then((res) => {
+            if (!res.ok) throw new Error("User not found");
+            return res.json();
+          })
+          .then((friend) => {
+            const friendId = friend.id;
+            return fetch(`${BASE_URL}/follows`, {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                follower_id: currentUser.id,
+                followee_id: friendId,
+              }),
+            });
+          })
+          .then((res) => {
+            if (!res.ok) throw new Error("Failed to unfollow user");
+            Swal.fire(
+              "Success",
+              `You have unfollowed @${friendUsername}`,
+              "success"
+            );
+            button.textContent = "Follow";
+            button.classList.remove("is-success");
+            button.classList.add("is-primary");
+            button.disabled = false;
+          })
+          .catch((err) => {
+            Swal.fire("Error", err.message, "error");
+            button.disabled = false;
+          });
+      }
+
+      // -----------------------------
+      // Modal open/close for new post
+      // -----------------------------
+      function openPostModal() {
+        document.getElementById("post-modal").classList.add("is-active");
+      }
+
+      function closePostModal() {
+        document.getElementById("post-modal").classList.remove("is-active");
+      }
+    </script>
+  </body>
+</html>
