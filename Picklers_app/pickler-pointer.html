@@ -149,9 +149,10 @@
     <!-- Include SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-      const BASE_URL = "http://localhost:3000";
+      const BASE_URL = "https://seniorprojectapi-qm1k.onrender.com";
       let currentFollowing = []; // Global list of usernames the current user is following
-
+// Local: http://localhost:3000
+// Online: https://seniorprojectapi-qm1k.onrender.com
       document.addEventListener("DOMContentLoaded", () => {
         // Check login
         const storedUser = localStorage.getItem("currentUser");
