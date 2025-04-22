@@ -41,7 +41,7 @@
     </style>
   </head>
   <body>
-      <nav class="navbar has-background-black">
+    <nav class="navbar has-background-black">
       <div class="navbar-brand">
         <a class="navbar-item has-text-white" href="pickler-pointer.html">
           <span class="ml-2 is-size-4">Picklers</span>
@@ -90,9 +90,9 @@
               </p>
             </div>
             <div class="column is-narrow">
-              <button class="button is-primary" id="settings-button">
-                Settings
-              </button>
+              <!-- Settings for own profile, replaced by Follow/Unfollow on others -->
+              <button class="button is-primary" id="settings-button">Settings</button>
+              <button class="button is-primary" id="action-btn" style="display:none;">Follow</button>
             </div>
           </div>
 
@@ -166,17 +166,15 @@
     <script>
       const BASE_URL = "https://seniorprojectapi-qm1k.onrender.com";
 
-      // Utility function: Retrieve current user from localStorage
       function getCurrentUser() {
-        const storedUser = localStorage.getItem("currentUser");
-        if (!storedUser) {
+        const stored = localStorage.getItem("currentUser");
+        if (!stored) {
           window.location.href = "index.html";
           return null;
         }
-        return JSON.parse(storedUser);
+        return JSON.parse(stored);
       }
 
-      // Update profile DOM elements
       function updateDOMProfile(user) {
         document.getElementById("user-name").textContent =
           user.username || "Unknown User";
@@ -188,106 +186,115 @@
           "Hello, " + (user.username || "Guest");
       }
 
-      // Load profile data from API
+      async function isFollowing(currentId, viewedId) {
+        const res = await fetch(`${BASE_URL}/users/${currentId}/following`);
+        if (!res.ok) return false;
+        const list = await res.json();
+        return list.some(u => String(u.id) === String(viewedId));
+      }
+
       function loadProfileData() {
         const currentUser = getCurrentUser();
-        fetch(`${BASE_URL}/users/${currentUser.id}`)
-          .then((res) => {
+        const params = new URLSearchParams(window.location.search);
+        const viewedUserId = params.get("userId") || currentUser.id;
+        const isOwn = String(viewedUserId) === String(currentUser.id);
+
+        const settingsBtn = document.getElementById("settings-button");
+        const actionBtn = document.getElementById("action-btn");
+
+        if (isOwn) {
+          actionBtn.style.display = "none";
+        } else {
+          settingsBtn.style.display = "none";
+          actionBtn.style.display = "inline-block";
+          isFollowing(currentUser.id, viewedUserId).then(following => {
+            actionBtn.textContent = following ? "Unfollow" : "Follow";
+            actionBtn.onclick = () => {
+              fetch(`${BASE_URL}/follows`, {
+                method: following ? "DELETE" : "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({
+                  follower_id: currentUser.id,
+                  followee_id: viewedUserId
+                })
+              })
+                .then(r => {
+                  if (!r.ok) throw new Error();
+                  following = !following;
+                  actionBtn.textContent = following ? "Unfollow" : "Follow";
+                })
+                .catch(() => Swal.fire("Error"));
+            };
+          });
+        }
+
+        fetch(`${BASE_URL}/users/${viewedUserId}`)
+          .then(res => {
             if (!res.ok) throw new Error("Failed to fetch user profile");
             return res.json();
           })
-          .then((user) => {
-            // Update currentUser in localStorage with any changes from the DB
-            localStorage.setItem("currentUser", JSON.stringify(user));
+          .then(user => {
+            if (!params.get("userId")) {
+              localStorage.setItem("currentUser", JSON.stringify(user));
+            }
             updateDOMProfile(user);
           })
-          .catch((err) => {
+          .catch(err => {
             console.error("Error loading profile:", err);
             document.getElementById("user-name").textContent =
               "Error loading profile";
           });
       }
 
-      // Load recent matches
       function loadRecentMatches() {
-        const currentUser = getCurrentUser();
+        const u = getCurrentUser();
         const container = document.getElementById("recent-matches");
         container.innerHTML = "<p>Loading matches...</p>";
-        fetch(`${BASE_URL}/users/${currentUser.id}/matches`)
-          .then((res) => {
-            if (!res.ok) throw new Error("Failed to fetch matches");
-            return res.json();
+        fetch(`${BASE_URL}/users/${u.id}/matches`)
+          .then(res => res.json())
+          .then(arr => {
+            if (!arr.length) return container.innerHTML = "<p>No recent matches.</p>";
+            container.innerHTML = arr
+              .map(m => `<p>🏓 ${m.result} (${new Date(m.played_at).toLocaleDateString()})</p>`)
+              .join("");
           })
-          .then((matches) => {
-            if (!Array.isArray(matches) || matches.length === 0) {
-              container.innerHTML = "<p>No recent matches.</p>";
-            } else {
-              container.innerHTML = matches
-                .map(
-                  (m) => `<p>🏓 ${m.result} (${new Date(
-                    m.played_at
-                  ).toLocaleDateString()})</p>`
-                )
-                .join("");
-            }
-          })
-          .catch((err) => {
-            console.error("Matches error:", err);
+          .catch(() => {
             container.innerHTML = "<p>Error loading matches.</p>";
           });
       }
 
-      // Load friends list
       function loadFriends() {
-        const currentUser = getCurrentUser();
+        const u = getCurrentUser();
         const container = document.getElementById("friends-list");
         container.innerHTML = "<p>Loading friends...</p>";
-        fetch(`${BASE_URL}/users/${currentUser.id}/friends`)
-          .then((res) => {
-            if (!res.ok) throw new Error("Failed to fetch friends");
-            return res.json();
+        fetch(`${BASE_URL}/users/${u.id}/friends`)
+          .then(res => res.json())
+          .then(arr => {
+            if (!arr.length) return container.innerHTML = "<p>No friends found.</p>";
+            container.innerHTML = arr.map(f => `<p>🎾 ${f.username}</p>`).join("");
           })
-          .then((friends) => {
-            if (!Array.isArray(friends) || friends.length === 0) {
-              container.innerHTML = "<p>No friends found.</p>";
-            } else {
-              container.innerHTML = friends
-                .map((f) => `<p>🎾 ${f.username}</p>`)
-                .join("");
-            }
-          })
-          .catch((err) => {
-            console.error("Friends error:", err);
+          .catch(() => {
             container.innerHTML = "<p>Error loading friends.</p>";
           });
       }
 
-      // Load courts for the Home Court dropdown
       function loadCourtsDropdown() {
         const select = document.getElementById("court-select");
         select.innerHTML = '<option value="">Select a Court</option>';
         fetch(`${BASE_URL}/courts`)
-          .then((res) => {
-            if (!res.ok) throw new Error("Failed to fetch courts");
-            return res.json();
+          .then(res => res.json())
+          .then(arr => {
+            arr.forEach(c => {
+              const opt = document.createElement("option");
+              opt.value = c.name;
+              opt.textContent = c.name;
+              select.appendChild(opt);
+            });
           })
-          .then((courts) => {
-            if (Array.isArray(courts) && courts.length > 0) {
-              courts.forEach((c) => {
-                const option = document.createElement("option");
-                option.value = c.name;
-                option.textContent = c.name;
-                select.appendChild(option);
-              });
-            }
-          })
-          .catch((err) => {
-            console.error("Courts error:", err);
-          });
+          .catch(() => {});
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        // Navbar burger toggle
         const burger = document.querySelector(".navbar-burger");
         const menu = document.getElementById("navbarMenu");
         burger.addEventListener("click", () => {
@@ -295,64 +302,46 @@
           menu.classList.toggle("is-active");
         });
 
-        // Load profile data, recent matches, friends, and courts for dropdown
-        loadProfileData();
-        loadRecentMatches();
-        loadFriends();
-        loadCourtsDropdown();
-
-        // Logout button
         document.getElementById("nav-logout-btn").addEventListener("click", () => {
           localStorage.removeItem("currentUser");
           window.location.href = "index.html";
         });
 
-        // Settings popout toggle
+        loadProfileData();
+        loadRecentMatches();
+        loadFriends();
+        loadCourtsDropdown();
+
+        // Settings popout logic still intact...
         const settingsButton = document.getElementById("settings-button");
         const settingsPopout = document.getElementById("settings-popout");
         const closeSettings = document.getElementById("close-settings");
-
-        settingsButton.addEventListener("click", () => {
-          settingsPopout.classList.add("is-active");
-        });
-        closeSettings.addEventListener("click", () => {
-          settingsPopout.classList.remove("is-active");
-        });
-
-        // Save settings: Update DB via PATCH /users/:id
+        settingsButton.addEventListener("click", () => settingsPopout.classList.add("is-active"));
+        closeSettings.addEventListener("click", () => settingsPopout.classList.remove("is-active"));
         document.getElementById("save-settings").addEventListener("click", () => {
           const currentUser = getCurrentUser();
           if (!currentUser) return;
           const newUsername = document.getElementById("new-username").value.trim();
           const newSummary = document.getElementById("new-summary").value.trim();
           const newHomeCourt = document.getElementById("court-select").value;
-          // Prepare payload: use new values if provided, otherwise fallback to current values
           const payload = {
             username: newUsername || currentUser.username,
             summary: newSummary || currentUser.summary,
             home_court: newHomeCourt || currentUser.home_court,
           };
-
-          // Call PATCH endpoint to update user in the database
           fetch(`${BASE_URL}/users/${currentUser.id}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type":"application/json"},
             body: JSON.stringify(payload),
           })
-            .then((res) => {
-              if (!res.ok) throw new Error("Failed to update settings");
-              return res.json();
-            })
-            .then((updatedUser) => {
+            .then(r => r.json())
+            .then(updatedUser => {
               localStorage.setItem("currentUser", JSON.stringify(updatedUser));
               updateDOMProfile(updatedUser);
               settingsPopout.classList.remove("is-active");
               Swal.fire("Saved!", "Your settings have been updated.", "success");
             })
-            .catch((err) => {
-              console.error(err);
-              Swal.fire("Error", err.message, "error");
-            });
+            .catch(err => Swal.fire("Error", err.message, "error"));
         });
       });
     </script>
