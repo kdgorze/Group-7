@@ -10,8 +10,16 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"
     />
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- FontAwesome for bell icon -->
+    <script
+      defer
+      src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"
+    ></script>
+
     <style>
-      /* Basic styling for feed posts and friend cards */
+      /* Basic styling */
       .feed-post {
         padding: 1rem;
         border-bottom: 1px solid #eee;
@@ -30,7 +38,7 @@
         color: #23d160;
         text-decoration: none;
       }
-      /* Tab color scheme: green active, white background, green text inactive */
+      /* Tabs: green active, white background */
       .tabs a {
         color: #23d160;
       }
@@ -38,9 +46,29 @@
         background-color: #23d160;
         color: #ffffff;
       }
+      /* Notification badge */
+      #notif-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        color: white;
+      }
+      #notif-count {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background-color: #23d160;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+        display: none;
+      }
     </style>
   </head>
+
   <body>
+    <!-- NAVBAR -->
     <nav class="navbar has-background-black">
       <div class="navbar-brand">
         <a class="navbar-item has-text-white" href="pickler-pointer.html">
@@ -68,6 +96,12 @@
             >
           </div>
           <div class="navbar-item">
+            <button id="notif-btn">
+              <span class="icon"><i class="fas fa-bell"></i></span>
+              <span id="notif-count">0</span>
+            </button>
+          </div>
+          <div class="navbar-item">
             <button class="button is-danger is-small" id="nav-logout-btn">
               Log Out
             </button>
@@ -76,7 +110,7 @@
       </div>
     </nav>
 
-    <!-- Main Content Section -->
+    <!-- Main Content -->
     <section class="section">
       <div class="container">
         <h1 class="title">Pickler Pointer</h1>
@@ -93,7 +127,6 @@
                 <h2 class="subtitle">Feed</h2>
               </div>
               <div class="level-right">
-                <!-- Button to open the new post modal -->
                 <button class="button is-small is-info" id="open-post-modal">
                   +
                 </button>
@@ -111,7 +144,7 @@
           <!-- Friends Column -->
           <div class="column is-6" style="position: relative">
             <h2 class="subtitle">Find Pickler Friends</h2>
-            <!-- Search Bar -->
+            <!-- Search -->
             <div class="field">
               <div class="control has-icons-left">
                 <input
@@ -123,13 +156,12 @@
                 <span class="icon is-left"><i class="fas fa-search"></i></span>
               </div>
             </div>
-            <!-- Suggestions -->
             <div
               id="friend-suggestions"
               class="box"
               style="display: none; max-height: 200px; overflow-y: auto"
             ></div>
-            <!-- Sort Dropdown -->
+            <!-- Sort -->
             <div class="field mt-2">
               <div class="control">
                 <div class="select is-small">
@@ -143,7 +175,7 @@
                 </div>
               </div>
             </div>
-            <!-- Filter Input -->
+            <!-- Filter -->
             <div class="field mt-2">
               <div class="control">
                 <input
@@ -221,22 +253,55 @@
       </div>
     </div>
 
-    <!-- Include SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Notifications Modal -->
+    <div class="modal" id="notif-modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Notifications</p>
+          <button class="delete" aria-label="close" id="notif-close"></button>
+        </header>
+        <section class="modal-card-body" id="notif-list">
+          <!-- injected -->
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-light" id="notif-clear">
+            Clear Notifications
+          </button>
+          <button class="button" id="notif-close-bottom">Close</button>
+        </footer>
+      </div>
+    </div>
+
     <script>
       const BASE_URL = "https://seniorprojectapi-qm1k.onrender.com";
+
+      // shared state
       let currentFollowing = [],
         currentTab = "all",
         allUsers = [];
 
+      // notification state
+      let seenFollowerIds = new Set(
+          JSON.parse(localStorage.getItem("seenFollowerIds") || "[]")
+        ),
+        seenReplyIds = new Set(
+          JSON.parse(localStorage.getItem("seenReplyIds") || "[]")
+        ),
+        unreadFollowers = [],
+        unreadReplies = [];
+
       document.addEventListener("DOMContentLoaded", () => {
+        // authentication check
         const storedUser = localStorage.getItem("currentUser");
         if (!storedUser) return (window.location.href = "index.html");
         const currentUser = JSON.parse(storedUser);
 
+        // navbar greeting
         document.getElementById("navbar-greeting").textContent =
           "Hello, " + (currentUser.username || "Guest");
 
+        // burger toggle
         document.querySelectorAll(".burger").forEach((b) =>
           b.addEventListener("click", () => {
             b.classList.toggle("is-active");
@@ -246,7 +311,40 @@
           })
         );
 
-        // Tabs
+        // logout
+        document
+          .getElementById("nav-logout-btn")
+          .addEventListener("click", () => {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+          });
+
+        // notification events
+        document
+          .getElementById("notif-btn")
+          .addEventListener("click", async () => {
+            await fetchNewFollowers();
+            await fetchNewReplies();
+            updateBadge();
+            showNotifModal();
+          });
+        document
+          .getElementById("notif-close")
+          .addEventListener("click", closeNotifModal);
+        document
+          .getElementById("notif-close-bottom")
+          .addEventListener("click", closeNotifModal);
+        document
+          .getElementById("notif-clear")
+          .addEventListener("click", clearNotifications);
+
+        // initial fetch + badge update
+        fetchNewFollowers().then(fetchNewReplies).then(updateBadge);
+        setInterval(() => {
+          fetchNewFollowers().then(fetchNewReplies).then(updateBadge);
+        }, 60000);
+
+        // tabs
         document.getElementById("tab-all").onclick = () => {
           currentTab = "all";
           toggleTab();
@@ -266,53 +364,60 @@
             .classList.toggle("is-active", currentTab === "following");
         }
 
-        // Logout
-        document
-          .getElementById("nav-logout-btn")
-          .addEventListener("click", () => {
-            localStorage.removeItem("currentUser");
-            window.location.href = "index.html";
-          });
-
-        // Load all users
+        // fetch users for friend search/sort/filter
         fetch(`${BASE_URL}/users`)
           .then((r) => (r.ok ? r.json() : []))
           .then((u) => (allUsers = u))
           .catch(() => (allUsers = []));
 
-        // Initialize friends then posts
-        loadFriends(currentUser).then(() => loadPosts());
-
-        // Courts modal handlers
+        // courts modal handlers
         document
           .getElementById("open-courts-modal")
-          .addEventListener("click", openCourtsModal);
+          .addEventListener("click", () => {
+            document.getElementById("courts-modal").classList.add("is-active");
+            loadCourtsModal();
+          });
         document
           .getElementById("close-courts-modal")
-          .addEventListener("click", closeCourtsModal);
+          .addEventListener("click", () =>
+            document
+              .getElementById("courts-modal")
+              .classList.remove("is-active")
+          );
         document
           .getElementById("cancel-courts-modal")
-          .addEventListener("click", closeCourtsModal);
+          .addEventListener("click", () =>
+            document
+              .getElementById("courts-modal")
+              .classList.remove("is-active")
+          );
 
-        // Post modal handlers
+        // post modal handlers
         document
           .getElementById("open-post-modal")
-          .addEventListener("click", openPostModal);
+          .addEventListener("click", () =>
+            document.getElementById("post-modal").classList.add("is-active")
+          );
         document
           .getElementById("close-post-modal")
-          .addEventListener("click", closePostModal);
+          .addEventListener("click", () =>
+            document.getElementById("post-modal").classList.remove("is-active")
+          );
         document
           .getElementById("cancel-post-btn")
-          .addEventListener("click", closePostModal);
+          .addEventListener("click", () =>
+            document.getElementById("post-modal").classList.remove("is-active")
+          );
         document
           .getElementById("modal-post-btn")
           .addEventListener("click", createPost);
 
-        // Search friends
+        // friend search/suggest/filter/sort
         const searchIn = document.getElementById("friend-search"),
           suggest = document.getElementById("friend-suggestions"),
           filterIn = document.getElementById("friend-filter"),
           sortIn = document.getElementById("friend-sort");
+
         searchIn.addEventListener("input", () => {
           const q = searchIn.value.trim().toLowerCase();
           if (!q) return (suggest.style.display = "none");
@@ -323,11 +428,12 @@
           suggest.innerHTML = m
             .map(
               (u) =>
-                `<p><a class=\"username-link\" href=\"profile.html?userId=${u.id}\">${u.username}</a></p>`
+                `<p><a class="username-link" href="profile.html?userId=${u.id}">${u.username}</a></p>`
             )
             .join("");
           suggest.style.display = "block";
         });
+
         filterIn.addEventListener("input", () => {
           const q = filterIn.value.trim().toLowerCase();
           document.querySelectorAll(".friend-card").forEach((card) => {
@@ -337,6 +443,7 @@
             card.style.display = name.includes(q) ? "" : "none";
           });
         });
+
         sortIn.addEventListener("change", () => {
           const val = sortIn.value;
           const cards = Array.from(document.querySelectorAll(".friend-card"));
@@ -359,33 +466,115 @@
           container.innerHTML = "";
           cards.forEach((c) => container.appendChild(c));
         });
+
+        // initialize friends then posts
+        loadFriends(currentUser).then(() => loadPosts());
       });
 
-      function openCourtsModal() {
-        document.getElementById("courts-modal").classList.add("is-active");
-        loadCourtsModal();
+      // —— Notification helpers ——
+      async function fetchNewFollowers() {
+        const u = JSON.parse(localStorage.getItem("currentUser") || "null");
+        if (!u) return;
+        const r = await fetch(`${BASE_URL}/users/${u.id}/followers`);
+        if (!r.ok) return;
+        const arr = await r.json();
+        unreadFollowers = arr.filter((x) => !seenFollowerIds.has(x.id));
       }
-      function closeCourtsModal() {
-        document.getElementById("courts-modal").classList.remove("is-active");
+
+      async function fetchNewReplies() {
+        const u = JSON.parse(localStorage.getItem("currentUser") || "null");
+        if (!u) return;
+        const r = await fetch(`${BASE_URL}/posts`);
+        if (!r.ok) return;
+        const posts = await r.json();
+        const mine = new Set(
+          posts.filter((p) => p.user_id === u.id).map((p) => p.id)
+        );
+        unreadReplies = posts.filter(
+          (p) =>
+            p.parent_post_id &&
+            mine.has(p.parent_post_id) &&
+            p.user_id !== u.id &&
+            !seenReplyIds.has(p.id)
+        );
       }
+
+      function updateBadge() {
+        const total = unreadFollowers.length + unreadReplies.length;
+        const b = document.getElementById("notif-count");
+        if (total) {
+          b.textContent = total;
+          b.style.display = "inline-block";
+        } else {
+          b.style.display = "none";
+        }
+      }
+
+      function showNotifModal() {
+        let html = "";
+        if (!unreadFollowers.length && !unreadReplies.length) {
+          html = "<p>No new notifications.</p>";
+        } else {
+          if (unreadFollowers.length) {
+            html += "<h3 class='subtitle is-6'>New Followers</h3>";
+            html += unreadFollowers
+              .map(
+                (u) =>
+                  `<p><strong>@${u.username}</strong> started following you.</p>`
+              )
+              .join("");
+          }
+          if (unreadReplies.length) {
+            html += "<h3 class='subtitle is-6 mt-4'>New Replies</h3>";
+            html += unreadReplies
+              .map(
+                (r) =>
+                  `<p><strong>@${r.username}</strong> replied: “${r.content}”</p>`
+              )
+              .join("");
+          }
+        }
+        document.getElementById("notif-list").innerHTML = html;
+        document.getElementById("notif-modal").classList.add("is-active");
+      }
+
+      function closeNotifModal() {
+        document.getElementById("notif-modal").classList.remove("is-active");
+      }
+
+      function clearNotifications() {
+        unreadFollowers.forEach((u) => seenFollowerIds.add(u.id));
+        unreadReplies.forEach((r) => seenReplyIds.add(r.id));
+        localStorage.setItem(
+          "seenFollowerIds",
+          JSON.stringify([...seenFollowerIds])
+        );
+        localStorage.setItem("seenReplyIds", JSON.stringify([...seenReplyIds]));
+        unreadFollowers = [];
+        unreadReplies = [];
+        updateBadge();
+        document.getElementById("notif-list").innerHTML =
+          "<p>No new notifications.</p>";
+      }
+
+      // —— Courts loader ——
       function loadCourtsModal() {
         const body = document.getElementById("courts-table-body");
         body.innerHTML = "<tr><td colspan='2'>Loading courts...</td></tr>";
         fetch(`${BASE_URL}/courts`)
           .then((r) => (r.ok ? r.json() : Promise.reject()))
-          .then(
-            (cs) =>
-              (body.innerHTML = cs
-                .map((c) => `<tr><td>${c.name}</td><td>${c.address}</td></tr>`)
-                .join(""))
-          )
-          .catch(
-            () =>
-              (body.innerHTML =
-                "<tr><td colspan='2'>Error loading courts.</td></tr>")
-          );
+          .then((cs) => {
+            body.innerHTML = cs
+              .map((c) => `<tr><td>${c.name}</td><td>${c.address}</td></tr>`)
+              .join("");
+          })
+          .catch(() => {
+            body.innerHTML =
+              "<tr><td colspan='2'>Error loading courts.</td></tr>";
+          });
       }
 
+      // —— Posts loader ——
       function loadPosts() {
         const feed = document.getElementById("feed");
         feed.innerHTML = "<p>Loading posts...</p>";
@@ -393,107 +582,106 @@
           .then((r) => (r.ok ? r.json() : Promise.reject()))
           .then((ps) => {
             let posts = ps;
-            if (currentTab === "following")
+            if (currentTab === "following") {
               posts = posts.filter((p) =>
                 currentFollowing.includes(p.username)
               );
-            if (!posts.length) return (feed.innerHTML = "<p>No posts yet.</p>");
+            }
+            if (!posts.length) {
+              feed.innerHTML = "<p>No posts yet.</p>";
+              return;
+            }
             const map = {};
             posts.forEach((p) => {
               p.replies = [];
               map[p.id] = p;
             });
             const roots = [];
-            posts.forEach((p) =>
-              p.parent_post_id && map[p.parent_post_id]
-                ? map[p.parent_post_id].replies.push(p)
-                : roots.push(p)
-            );
+            posts.forEach((p) => {
+              if (p.parent_post_id && map[p.parent_post_id]) {
+                map[p.parent_post_id].replies.push(p);
+              } else {
+                roots.push(p);
+              }
+            });
             function render(p, indent = 0) {
               const dt = new Date(p.created_at).toLocaleString();
               const left = indent * 20;
               const usr = JSON.parse(localStorage.getItem("currentUser"));
               const owner = usr && usr.id === p.user_id;
-              let ctrl =
-                `<button class=\"button is-small is-light reply-btn\">Reply</button>` +
-                (owner
-                  ? `<button class=\"button is-small is-danger delete-post-btn\" style=\"margin-left:0.5rem;\">Delete</button>`
-                  : "");
+              let ctrl = `<button class="button is-small is-light reply-btn">Reply</button>`;
+              if (owner) {
+                ctrl += `<button class="button is-small is-danger delete-post-btn" style="margin-left:0.5rem;">Delete</button>`;
+              }
               let out =
-                `<div class=\"feed-post\" style=\"margin-left:${left}px\" data-post-id=\"${p.id}\">` +
-                `<p><strong><a class=\"username-link\" href=\"profile.html?userId=${p.user_id}\">${p.username}</a></strong> posted: ${p.content}</p>` +
+                `<div class="feed-post" style="margin-left:${left}px" data-post-id="${p.id}">` +
+                `<p><strong><a class="username-link" href="profile.html?userId=${p.user_id}">${p.username}</a></strong> posted: ${p.content}</p>` +
                 `<small>${dt}</small><br/>${ctrl}` +
-                `<div class=\"reply-box\" style=\"display:none;margin-top:0.5rem;\">` +
-                `<textarea class=\"textarea is-small reply-content\" placeholder=\"Write a reply...\"></textarea>` +
-                `<button class=\"button is-small is-info post-reply-btn\">Post Reply</button></div></div>`;
+                `<div class="reply-box" style="display:none;margin-top:0.5rem;">` +
+                `<textarea class="textarea is-small reply-content" placeholder="Write a reply..."></textarea>` +
+                `<button class="button is-small is-info post-reply-btn">Post Reply</button></div></div>`;
               p.replies.forEach((r) => (out += render(r, indent + 1)));
               return out;
             }
             feed.innerHTML = roots.map((r) => render(r)).join("");
             setTimeout(() => {
-              document.querySelectorAll(".reply-btn").forEach(
-                (b) =>
-                  (b.onclick = () => {
-                    const p = b.closest(".feed-post");
-                    const rb = p.querySelector(".reply-box");
-                    rb.style.display =
-                      rb.style.display === "none" ? "block" : "none";
+              document.querySelectorAll(".reply-btn").forEach((b) => {
+                b.onclick = () => {
+                  const p = b.closest(".feed-post");
+                  const rb = p.querySelector(".reply-box");
+                  rb.style.display =
+                    rb.style.display === "none" ? "block" : "none";
+                };
+              });
+              document.querySelectorAll(".post-reply-btn").forEach((b) => {
+                b.onclick = () => {
+                  const p = b.closest(".feed-post");
+                  const txt = p.querySelector(".reply-content").value.trim();
+                  if (!txt)
+                    return Swal.fire("Error", "Reply cannot be empty", "error");
+                  const pid = p.dataset.postId;
+                  const u = JSON.parse(localStorage.getItem("currentUser"));
+                  fetch(`${BASE_URL}/posts`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      user_id: u.id,
+                      content: txt,
+                      parent_post_id: pid,
+                    }),
                   })
-              );
-              document.querySelectorAll(".post-reply-btn").forEach(
-                (b) =>
-                  (b.onclick = () => {
-                    const p = b.closest(".feed-post");
-                    const txt = p.querySelector(".reply-content").value.trim();
-                    if (!txt)
-                      return Swal.fire(
-                        "Error",
-                        "Reply cannot be empty",
-                        "error"
-                      );
-                    const pid = p.dataset.postId;
-                    const u = JSON.parse(localStorage.getItem("currentUser"));
-                    fetch(`${BASE_URL}/posts`, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        user_id: u.id,
-                        content: txt,
-                        parent_post_id: pid,
-                      }),
-                    })
+                    .then((r) => (r.ok ? loadPosts() : Promise.reject()))
+                    .then(() =>
+                      Swal.fire("Success", "Reply posted!", "success")
+                    )
+                    .catch((e) => Swal.fire("Error", e.message, "error"));
+                };
+              });
+              document.querySelectorAll(".delete-post-btn").forEach((b) => {
+                b.onclick = () => {
+                  const id = b.closest(".feed-post").dataset.postId;
+                  Swal.fire({
+                    title: "Delete Post?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes",
+                  }).then((res) => {
+                    if (!res.isConfirmed) return;
+                    fetch(`${BASE_URL}/posts/${id}`, { method: "DELETE" })
                       .then((r) => (r.ok ? loadPosts() : Promise.reject()))
-                      .then(() =>
-                        Swal.fire("Success", "Reply posted!", "success")
-                      )
+                      .then(() => Swal.fire("Deleted!", "", "success"))
                       .catch((e) => Swal.fire("Error", e.message, "error"));
-                  })
-              );
-              document.querySelectorAll(".delete-post-btn").forEach(
-                (b) =>
-                  (b.onclick = () => {
-                    const id = b.closest(".feed-post").dataset.postId;
-                    Swal.fire({
-                      title: "Delete Post?",
-                      icon: "warning",
-                      showCancelButton: true,
-                      confirmButtonText: "Yes",
-                    }).then((res) => {
-                      if (!res.isConfirmed) return;
-                      fetch(`${BASE_URL}/posts/${id}`, { method: "DELETE" })
-                        .then((r) => (r.ok ? loadPosts() : Promise.reject()))
-                        .then(() => Swal.fire("Deleted!", "", "success"))
-                        .catch((e) => Swal.fire("Error", e.message, "error"));
-                    });
-                  })
-              );
+                  });
+                };
+              });
             }, 100);
           })
-          .catch(
-            (e) => (feed.innerHTML = `<p>Error loading posts: ${e.message}</p>`)
-          );
+          .catch((e) => {
+            feed.innerHTML = `<p>Error loading posts: ${e.message}</p>`;
+          });
       }
 
+      // —— Post creation ——
       function createPost() {
         const u = JSON.parse(localStorage.getItem("currentUser") || "null");
         if (!u)
@@ -507,12 +695,13 @@
         })
           .then((r) => (r.ok ? loadPosts() : Promise.reject()))
           .then(() => {
-            closePostModal();
+            document.getElementById("post-modal").classList.remove("is-active");
             Swal.fire("Success", "Posted!", "success");
           })
           .catch((e) => Swal.fire("Error", e.message, "error"));
       }
 
+      // —— Friends loader ——
       function loadFriends(u) {
         return fetch(`${BASE_URL}/users`)
           .then((r) => (r.ok ? r.json() : Promise.reject()))
@@ -526,13 +715,13 @@
                   .filter((x) => x.id !== u.id)
                   .forEach((user) => {
                     const fl = currentFollowing.includes(user.username);
-                    html += `<div class=\"friend-card\"><div class=\"media\"><div class=\"media-content\"><p class=\"title is-5\"><a class=\"username-link\" href=\"profile.html?userId=${
+                    html += `<div class="friend-card"><div class="media"><div class="media-content"><p class="title is-5"><a class="username-link" href="profile.html?userId=${
                       user.id
-                    }\">${
+                    }">${
                       user.username
-                    }</a></p><p class=\"subtitle is-6\">@${user.username.toLowerCase()}</p></div><div class=\"media-right\"><button class=\"button is-small follow-btn\" data-username=\"${
+                    }</a></p><p class="subtitle is-6">@${user.username.toLowerCase()}</p></div><div class="media-right"><button class="button is-small follow-btn" data-username="${
                       user.username
-                    }\">${
+                    }">${
                       fl ? "Following" : "Follow"
                     }</button></div></div></div>`;
                   });
@@ -542,48 +731,39 @@
           );
       }
 
+      // —— Follow/unfollow buttons ——
       function setupFollowButtons() {
-        document.querySelectorAll(".follow-btn").forEach(
-          (b) =>
-            (b.onclick = () => {
-              const uname = b.dataset.username;
-              const me = JSON.parse(localStorage.getItem("currentUser"));
-              const doFollow = b.textContent.trim() === "Follow";
-              Swal.fire({
-                title: doFollow ? "Follow?" : "Unfollow?",
-                text: `@${uname}`,
-                icon: doFollow ? "question" : "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes",
-              }).then((res) => {
-                if (!res.isConfirmed) return;
-                fetch(`${BASE_URL}/users?username=${uname}`)
-                  .then((r) => r.json())
-                  .then((fr) =>
-                    fetch(`${BASE_URL}/follows`, {
-                      method: doFollow ? "POST" : "DELETE",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        follower_id: me.id,
-                        followee_id: fr.id,
-                      }),
-                    })
-                  )
-                  .then((r2) => (r2.ok ? loadPosts() : Promise.reject()))
-                  .then(
-                    () => (b.textContent = doFollow ? "Following" : "Follow")
-                  )
-                  .catch((e) => Swal.fire("Error", e.message, "error"));
-              });
-            })
-        );
-      }
-
-      function openPostModal() {
-        document.getElementById("post-modal").classList.add("is-active");
-      }
-      function closePostModal() {
-        document.getElementById("post-modal").classList.remove("is-active");
+        document.querySelectorAll(".follow-btn").forEach((b) => {
+          b.onclick = () => {
+            const uname = b.dataset.username;
+            const me = JSON.parse(localStorage.getItem("currentUser"));
+            const doFollow = b.textContent.trim() === "Follow";
+            Swal.fire({
+              title: doFollow ? "Follow?" : "Unfollow?",
+              text: `@${uname}`,
+              icon: doFollow ? "question" : "warning",
+              showCancelButton: true,
+              confirmButtonText: "Yes",
+            }).then((res) => {
+              if (!res.isConfirmed) return;
+              fetch(`${BASE_URL}/users?username=${uname}`)
+                .then((r) => r.json())
+                .then((fr) =>
+                  fetch(`${BASE_URL}/follows`, {
+                    method: doFollow ? "POST" : "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      follower_id: me.id,
+                      followee_id: fr.id,
+                    }),
+                  })
+                )
+                .then((r2) => (r2.ok ? loadPosts() : Promise.reject()))
+                .then(() => (b.textContent = doFollow ? "Following" : "Follow"))
+                .catch((e) => Swal.fire("Error", e.message, "error"));
+            });
+          };
+        });
       }
     </script>
   </body>
